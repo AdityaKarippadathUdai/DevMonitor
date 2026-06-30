@@ -30,35 +30,44 @@ async function startServer() {
     }
   });
 
-  // 3. API - Server-Sent Events (SSE) for Real-Time Streaming (500ms intervals)
+  // 3. API - Server-Sent Events (SSE) for Real-Time Streaming (1s interval, non-overlapping)
   app.get('/api/metrics/live', (req, res) => {
     // Write headers for SSE
     res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable buffering for Nginx/Cloud Run proxies
     res.flushHeaders(); // Establish the connection immediately
 
     console.log('[SSE] Client connected to live metrics stream');
 
-    // Send initial snapshot immediately
-    getAllMetrics().then((metrics) => {
-      res.write(`data: ${JSON.stringify(metrics)}\n\n`);
-    }).catch(err => console.error('[SSE] Initial fetch failed:', err));
+    let isClosed = false;
+    let timeoutId: NodeJS.Timeout;
 
-    // Polling interval of 500ms
-    const intervalId = setInterval(async () => {
+    const sendMetrics = async () => {
+      if (isClosed) return;
       try {
         const metrics = await getAllMetrics();
-        res.write(`data: ${JSON.stringify(metrics)}\n\n`);
+        if (!isClosed) {
+          res.write(`data: ${JSON.stringify(metrics)}\n\n`);
+        }
       } catch (error) {
         console.error('[SSE] Error fetching metrics:', error);
+      } finally {
+        if (!isClosed) {
+          timeoutId = setTimeout(sendMetrics, 1000);
+        }
       }
-    }, 500);
+    };
+
+    // Trigger first stream
+    sendMetrics();
 
     // Clean up when client disconnects
     req.on('close', () => {
       console.log('[SSE] Client disconnected');
-      clearInterval(intervalId);
+      isClosed = true;
+      clearTimeout(timeoutId);
       res.end();
     });
   });
