@@ -77,13 +77,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
         {/* System Specs and Controls */}
         <div className="flex items-center gap-4">
-          {specs && (
-            <div className={`hidden md:flex flex-col text-right text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              <div className="font-mono">Kernel: {specs.kernel}</div>
-              <div className="text-[10px]">Uptime: {formatUptime(currentMetrics?.system.uptime || specs.uptime)}</div>
-            </div>
-          )}
-
           {/* Connection Badge */}
           <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
             isLive 
