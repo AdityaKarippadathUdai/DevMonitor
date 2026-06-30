@@ -1,5 +1,5 @@
 import si from 'systeminformation';
-import { MemoryMetrics } from '../../src/types';
+import type { MemoryMetrics } from '../../shared/types.js';
 
 export async function getMemoryMetrics(): Promise<MemoryMetrics> {
   try {
