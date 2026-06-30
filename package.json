@@ -1,24 +1,23 @@
 {
-  "name": "react-example",
+  "name": "resource-monitor",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "main": "dist/electron/main.js",
   "scripts": {
-    "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
-    "start": "node dist/server.cjs",
-    "electron:dev": "concurrently \"npm run dev\" \"electron .\"",
-    "electron:build": "npm run build && tsc -p tsconfig.electron.json && electron-builder",
-    "clean": "rm -rf dist server.js",
+    "dev": "vite",
+    "build": "vite build",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://127.0.0.1:5173 && npm run build:electron && VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
+    "electron:build": "npm run build && npm run build:electron && electron-builder",
+    "dist": "npm run electron:build",
+    "clean": "rm -rf dist release",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
-    "dotenv": "^17.2.3",
-    "express": "^5.0.1",
     "lucide-react": "^0.475.0",
     "motion": "^12.23.24",
     "react": "^19.0.1",
@@ -29,17 +28,20 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
     "@types/node": "^22.15.5",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.21",
-    "concurrently": "^9.1.2",
-    "electron": "^34.0.2",
+    "concurrently": "^9.2.3",
+    "electron": "^34.5.8",
     "electron-builder": "^25.1.8",
     "esbuild": "^0.25.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.19.3",
     "typescript": "~5.8.2",
-    "vite": "^6.2.3"
+    "vite": "^6.2.3",
+    "vite-plugin-electron": "^1.1.0",
+    "wait-on": "^9.0.10"
   },
   "build": {
     "appId": "com.resourcemonitor.app",
@@ -51,14 +53,23 @@
       "dist/**/*",
       "electron/**/*"
     ],
+    "asar": true,
     "mac": {
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg"
+      ]
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "Resource-Monitor-Setup-${version}.exe"
     },
     "linux": {
-      "target": "AppImage",
+      "target": [
+        "AppImage"
+      ],
       "category": "System"
     }
   }
