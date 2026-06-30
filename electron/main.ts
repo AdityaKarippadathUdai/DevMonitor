@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getAllMetrics, getSystemSpecs } from './services/system.js';
@@ -10,7 +11,16 @@ let mainWindow: BrowserWindow | null = null;
 let metricsInterval: NodeJS.Timeout | null = null;
 
 function resolvePreloadPath() {
-  const preloadPath = path.join(app.getAppPath(), 'electron', 'preload.cjs');
+  const candidates = [
+    path.resolve(app.getAppPath(), 'electron/preload.cjs'),
+    path.resolve(__dirname, '../../electron/preload.cjs'),
+    path.resolve(__dirname, 'preload.cjs'),
+    path.resolve(__dirname, 'preload.js'),
+  ];
+
+  const existingPath = candidates.find((candidate) => existsSync(candidate));
+  const preloadPath = existingPath ?? candidates[0];
+
   console.log(`[Electron] Using preload script at ${preloadPath}`);
   return preloadPath;
 }
@@ -60,6 +70,15 @@ async function createWindow() {
   console.log('[Electron] BrowserWindow created');
 
   await loadAppContent(mainWindow);
+
+  mainWindow.webContents.on('did-finish-load', async () => {
+    try {
+      const apiKeys = await mainWindow?.webContents.executeJavaScript('window.electronAPI ? Object.keys(window.electronAPI) : []');
+      console.log('[Electron] Renderer bridge keys:', apiKeys);
+    } catch (error) {
+      console.error('[Electron] Failed to inspect renderer bridge:', error);
+    }
+  });
 
   console.log('[Electron] Renderer loaded, starting metrics polling');
   startMetricsPolling();
