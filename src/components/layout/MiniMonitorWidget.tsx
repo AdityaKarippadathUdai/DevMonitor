@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useMetricsStore } from '../../store/useMetricsStore';
 import { getGlassmorphicStyle } from '../../utils/glassmorphism';
+import { getChartColorsByMode } from '../../utils/colorModes';
 import { 
   Cpu, 
   Laptop, 
@@ -15,9 +16,10 @@ import {
 } from 'lucide-react';
 
 export const MiniMonitorWidget: React.FC = () => {
-  const { currentMetrics, history, theme, glassSettings, miniModeActive, setMiniModeActive } = useMetricsStore();
+  const { currentMetrics, history, theme, glassSettings, miniModeActive, setMiniModeActive, colorMode } = useMetricsStore();
   const isDark = theme === 'dark';
   const glassStyle = getGlassmorphicStyle(glassSettings, isDark);
+  const colors = getChartColorsByMode(colorMode);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [position, setPosition] = useState({ x: -1, y: -1 });
@@ -273,12 +275,12 @@ export const MiniMonitorWidget: React.FC = () => {
         {isCollapsed ? (
           /* COLLAPSED MINI-PILL MODE */
           <div className="flex-1 flex items-center justify-around px-3 py-1 font-mono text-[10px]">
-            <div className="flex items-center gap-1 text-cyan-400">
+            <div className="flex items-center gap-1" style={{ color: colors.cpu }}>
               <Cpu className="w-3 h-3" />
               <span className="font-bold">{cpuUsage}%</span>
             </div>
             <span className="text-slate-500">|</span>
-            <div className="flex items-center gap-1 text-pink-400">
+            <div className="flex items-center gap-1" style={{ color: colors.mem }}>
               <Laptop className="w-3 h-3" />
               <span className="font-bold">{ramUsagePercent}%</span>
             </div>
@@ -310,7 +312,8 @@ export const MiniMonitorWidget: React.FC = () => {
                       cx="32"
                       cy="32"
                       r={radius}
-                      className="stroke-cyan-500 transition-all duration-300"
+                      className="transition-all duration-300"
+                      style={{ stroke: colors.cpu }}
                       strokeWidth={strokeWidth}
                       fill="transparent"
                       strokeDasharray={circumference}
@@ -320,14 +323,14 @@ export const MiniMonitorWidget: React.FC = () => {
                   </svg>
                   {/* Gauge Overlay Value */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-                    <span className="text-xs font-bold font-mono text-cyan-400">{cpuUsage}%</span>
+                    <span className="text-xs font-bold font-mono" style={{ color: colors.cpu }}>{cpuUsage}%</span>
                     <span className="text-[7px] font-mono text-slate-400 mt-0.5 uppercase tracking-wide">CPU</span>
                   </div>
                 </div>
-
+ 
                 {/* Mini cpu details */}
                 <div className="mt-1 flex items-center gap-1 text-[8px] font-mono text-slate-400">
-                  <Activity className="w-2.5 h-2.5 text-cyan-400" />
+                  <Activity className="w-2.5 h-2.5" style={{ color: colors.cpu }} />
                   <span>Load: Active</span>
                 </div>
               </div>
@@ -348,7 +351,8 @@ export const MiniMonitorWidget: React.FC = () => {
                       cx="32"
                       cy="32"
                       r={radius}
-                      className="stroke-pink-500 transition-all duration-300"
+                      className="transition-all duration-300"
+                      style={{ stroke: colors.mem }}
                       strokeWidth={strokeWidth}
                       fill="transparent"
                       strokeDasharray={circumference}
@@ -357,7 +361,7 @@ export const MiniMonitorWidget: React.FC = () => {
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
-                    <span className="text-xs font-bold font-mono text-pink-400">{ramUsagePercent}%</span>
+                    <span className="text-xs font-bold font-mono" style={{ color: colors.mem }}>{ramUsagePercent}%</span>
                     <span className="text-[7px] font-mono text-slate-400 mt-0.5 uppercase tracking-wide">RAM</span>
                   </div>
                 </div>
@@ -376,11 +380,11 @@ export const MiniMonitorWidget: React.FC = () => {
             }`}>
               <div className="flex items-center justify-between text-[8px] font-mono text-slate-400">
                 <span className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.cpu }}></span>
                   CPU Sparkline
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.mem }}></span>
                   RAM Sparkline
                 </span>
               </div>
@@ -392,7 +396,7 @@ export const MiniMonitorWidget: React.FC = () => {
                     {/* CPU Sparkline Path */}
                     <polyline
                       fill="none"
-                      stroke="#22d3ee"
+                      stroke={colors.cpu}
                       strokeWidth="1.2"
                       points={getSparklinePoints('cpu', 260, 24)}
                       className="transition-all duration-300"
@@ -400,7 +404,7 @@ export const MiniMonitorWidget: React.FC = () => {
                     {/* RAM Sparkline Path */}
                     <polyline
                       fill="none"
-                      stroke="#ec4899"
+                      stroke={colors.mem}
                       strokeWidth="1.2"
                       points={getSparklinePoints('memory', 260, 24)}
                       className="transition-all duration-300"

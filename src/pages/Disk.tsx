@@ -2,12 +2,14 @@ import React from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
 import { MetricsChart } from '../components/graphs/MetricsChart';
 import { getChartColorsByMode } from '../utils/colorModes';
+import { getGlassmorphicStyle } from '../utils/glassmorphism';
 import { HardDrive, Activity, TrendingUp } from 'lucide-react';
 
 export const Disk: React.FC = () => {
-  const { currentMetrics, history, theme, colorMode } = useMetricsStore();
+  const { currentMetrics, history, theme, colorMode, glassSettings } = useMetricsStore();
   const isDark = theme === 'dark';
   const colors = getChartColorsByMode(colorMode);
+  const glassStyle = getGlassmorphicStyle(glassSettings, isDark);
 
   if (!currentMetrics) {
     return (
@@ -62,9 +64,7 @@ export const Disk: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Read Rates */}
-        <div className={`rounded-2xl border p-5 ${
-          isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-        }`}>
+        <div className={`${glassStyle.className} p-5`} style={glassStyle.style}>
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-semibold text-slate-500 font-mono">Active Read Rates</span>
             <span className="text-xs font-mono font-bold" style={{ color: colors.disk }}>
@@ -82,9 +82,7 @@ export const Disk: React.FC = () => {
         </div>
 
         {/* Write Rates */}
-        <div className={`rounded-2xl border p-5 ${
-          isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-        }`}>
+        <div className={`${glassStyle.className} p-5`} style={glassStyle.style}>
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-semibold text-slate-500 font-mono">Active Write Rates</span>
             <span className="text-xs font-mono font-bold" style={{ color: colors.mem }}>
@@ -104,9 +102,7 @@ export const Disk: React.FC = () => {
       </div>
 
       {/* Complete Disk Volume Listings */}
-      <div className={`rounded-2xl border p-6 ${
-        isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-      }`}>
+      <div className={`${glassStyle.className} p-6`} style={glassStyle.style}>
         <h3 className="font-semibold text-sm mb-5 flex items-center gap-2">
           <HardDrive className="w-4 h-4" style={{ color: colors.disk }} />
           <span>Mounted Storage Volumes</span>

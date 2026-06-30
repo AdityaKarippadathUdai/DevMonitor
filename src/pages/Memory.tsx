@@ -1,6 +1,7 @@
 import React from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
 import { getChartColorsByMode, ChartColors } from '../utils/colorModes';
+import { getGlassmorphicStyle } from '../utils/glassmorphism';
 import { Layers, Database, ShieldAlert, Cpu } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -147,9 +148,10 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB, colors
 };
 
 export const Memory: React.FC = () => {
-  const { currentMetrics, history, theme, colorMode } = useMetricsStore();
+  const { currentMetrics, history, theme, colorMode, glassSettings } = useMetricsStore();
   const isDark = theme === 'dark';
   const colors = getChartColorsByMode(colorMode);
+  const glassStyle = getGlassmorphicStyle(glassSettings, isDark);
 
   if (!currentMetrics) {
     return (
@@ -204,9 +206,7 @@ export const Memory: React.FC = () => {
       {/* Primary stats layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Timeline Chart */}
-        <div className={`lg:col-span-2 rounded-2xl border p-5 ${
-          isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-        }`}>
+        <div className={`${glassStyle.className} lg:col-span-2 p-5`} style={glassStyle.style}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
               <h3 className="font-semibold text-sm">Memory Allocation (60 seconds)</h3>
@@ -242,9 +242,7 @@ export const Memory: React.FC = () => {
         </div>
 
         {/* Diagnostic details */}
-        <div className={`rounded-2xl border p-5 flex flex-col justify-between ${
-          isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-        }`}>
+        <div className={`${glassStyle.className} p-5 flex flex-col justify-between`} style={glassStyle.style}>
           <div>
             <h3 className="font-semibold text-sm mb-4">Usage Summary</h3>
             <div className="space-y-3 font-mono text-xs">
@@ -295,9 +293,7 @@ export const Memory: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Memory Bar Segment Graph */}
-        <div className={`rounded-2xl border p-5 ${
-          isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-        }`}>
+        <div className={`${glassStyle.className} p-5`} style={glassStyle.style}>
           <h3 className="font-semibold text-sm mb-4">Memory Allocation Segments</h3>
           
           <div className="space-y-4">
@@ -365,9 +361,7 @@ export const Memory: React.FC = () => {
         </div>
 
         {/* Swap File Virtual Memory Allocation */}
-        <div className={`rounded-2xl border p-5 ${
-          isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-        }`}>
+        <div className={`${glassStyle.className} p-5`} style={glassStyle.style}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-sm">Swap Virtual Page File</h3>
             <span 

@@ -2,12 +2,14 @@ import React from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
 import { MetricsChart } from '../components/graphs/MetricsChart';
 import { getChartColorsByMode } from '../utils/colorModes';
+import { getGlassmorphicStyle } from '../utils/glassmorphism';
 import { Cpu, HelpCircle, Activity, Wind, Zap, Gauge } from 'lucide-react';
 
 export const GPU: React.FC = () => {
-  const { currentMetrics, history, theme, colorMode } = useMetricsStore();
+  const { currentMetrics, history, theme, colorMode, glassSettings } = useMetricsStore();
   const isDark = theme === 'dark';
   const colors = getChartColorsByMode(colorMode);
+  const glassStyle = getGlassmorphicStyle(glassSettings, isDark);
 
   if (!currentMetrics) {
     return (
@@ -65,9 +67,8 @@ export const GPU: React.FC = () => {
             return (
               <div 
                 key={idx} 
-                className={`rounded-2xl border p-6 space-y-6 ${
-                  isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-                }`}
+                className={`${glassStyle.className} p-6 space-y-6`}
+                style={glassStyle.style}
               >
                 {/* Header detail */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800/10">
@@ -196,9 +197,7 @@ export const GPU: React.FC = () => {
         </div>
       ) : (
         /* GPU FALLBACK STATE: Beautiful glassmorphic fallback view if no GPU exists */
-        <div className={`rounded-2xl border p-10 text-center space-y-6 max-w-2xl mx-auto flex flex-col items-center justify-center ${
-          isDark ? 'bg-slate-900/30 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-        }`}>
+        <div className={`${glassStyle.className} p-10 text-center space-y-6 max-w-2xl mx-auto flex flex-col items-center justify-center`} style={glassStyle.style}>
           <div className="w-16 h-16 rounded-3xl bg-amber-500/10 flex items-center justify-center text-amber-500 animate-pulse">
             <HelpCircle className="w-8 h-8" />
           </div>

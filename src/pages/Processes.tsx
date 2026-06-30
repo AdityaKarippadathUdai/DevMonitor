@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
+import { getGlassmorphicStyle } from '../utils/glassmorphism';
 import { ListRestart, Search, ArrowUpDown, ChevronUp, ChevronDown } from 'lucide-react';
 
 type SortKey = 'pid' | 'name' | 'cpu' | 'mem';
 type SortOrder = 'asc' | 'desc';
 
 export const Processes: React.FC = () => {
-  const { currentMetrics, theme } = useMetricsStore();
+  const { currentMetrics, theme, glassSettings } = useMetricsStore();
   const [filterQuery, setFilterQuery] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('cpu');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const isDark = theme === 'dark';
+  const glassStyle = getGlassmorphicStyle(glassSettings, isDark);
 
   if (!currentMetrics) {
     return (
@@ -77,9 +79,7 @@ export const Processes: React.FC = () => {
       </div>
 
       {/* Control panel & table */}
-      <div className={`rounded-2xl border p-5 ${
-        isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-      }`}>
+      <div className={`${glassStyle.className} p-5`} style={glassStyle.style}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
           <div className="flex items-center gap-2.5">
             <ListRestart className="w-5 h-5 text-cyan-400" />

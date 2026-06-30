@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
 import { MetricsChart } from '../components/graphs/MetricsChart';
 import { getChartColorsByMode } from '../utils/colorModes';
+import { getGlassmorphicStyle } from '../utils/glassmorphism';
 import { Cpu, Terminal, Search, Flame, Server } from 'lucide-react';
 
 export const CPU: React.FC = () => {
-  const { currentMetrics, history, theme, colorMode } = useMetricsStore();
+  const { currentMetrics, history, theme, colorMode, glassSettings } = useMetricsStore();
   const [filterQuery, setFilterQuery] = useState('');
   const isDark = theme === 'dark';
   const colors = getChartColorsByMode(colorMode);
+  const glassStyle = getGlassmorphicStyle(glassSettings, isDark);
 
   if (!currentMetrics) {
     return (
@@ -56,9 +58,7 @@ export const CPU: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Core Utilization Timeline */}
-        <div className={`lg:col-span-2 rounded-2xl border p-5 ${
-          isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-        }`}>
+        <div className={`${glassStyle.className} lg:col-span-2 p-5`} style={glassStyle.style}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-sm">Utilization Timeline (60 seconds)</h3>
             <span 
@@ -79,9 +79,7 @@ export const CPU: React.FC = () => {
         </div>
 
         {/* Static Spec Details Card */}
-        <div className={`rounded-2xl border p-5 flex flex-col justify-between ${
-          isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-        }`}>
+        <div className={`${glassStyle.className} p-5 flex flex-col justify-between`} style={glassStyle.style}>
           <div>
             <h3 className="font-semibold text-sm mb-4">Specifications</h3>
             <div className="space-y-3 font-mono text-xs">
@@ -132,9 +130,7 @@ export const CPU: React.FC = () => {
       </div>
 
       {/* Grid of Logical Cores */}
-      <div className={`rounded-2xl border p-5 ${
-        isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-      }`}>
+      <div className={`${glassStyle.className} p-5`} style={glassStyle.style}>
         <h3 className="font-semibold text-sm mb-4">Logical Cores Utilization</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3.5">
           {(cpu?.cores || []).map((coreLoad, idx) => {
@@ -163,9 +159,7 @@ export const CPU: React.FC = () => {
       </div>
 
       {/* Top Processes Sorted by CPU Load */}
-      <div className={`rounded-2xl border p-5 ${
-        isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
-      }`}>
+      <div className={`${glassStyle.className} p-5`} style={glassStyle.style}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2.5">
             <Terminal className="w-4 h-4" style={{ color: colors.cpu }} />
