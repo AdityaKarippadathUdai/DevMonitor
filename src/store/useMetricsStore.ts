@@ -49,6 +49,30 @@ const loadColorMode = (): string => {
   }
 };
 
+const loadTheme = (): 'dark' | 'light' => {
+  try {
+    const savedColorMode = localStorage.getItem('color-mode');
+    if (savedColorMode) {
+      const preset = COLOR_MODES.find(m => m.id === savedColorMode);
+      if (preset && preset.theme) {
+        return preset.theme;
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load initial theme', e);
+  }
+  return 'dark';
+};
+
+const initialTheme = loadTheme();
+if (typeof window !== 'undefined') {
+  if (initialTheme === 'dark') {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+}
+
 // Helper to load settings from localStorage safely
 const loadGlassSettings = (): GlassmorphismSettings => {
   try {
@@ -68,7 +92,7 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
   currentMetrics: null,
   history: [],
   activeTab: 'dashboard',
-  theme: 'dark',
+  theme: loadTheme(),
   isLive: false,
   glassSettings: loadGlassSettings(),
   miniModeActive: false,

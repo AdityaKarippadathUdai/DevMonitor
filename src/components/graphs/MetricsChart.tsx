@@ -28,10 +28,11 @@ export const MetricsChart: React.FC<MetricsChartProps> = ({
   domain = [0, 100],
 }) => {
   const theme = useMetricsStore((state) => state.theme);
+  const colorMode = useMetricsStore((state) => state.colorMode);
   const isDark = theme === 'dark';
 
-  // Gradient IDs need to be unique
-  const gradientId = `gradient-${dataKey}`;
+  // Gradient IDs need to be unique and update on color mode switch
+  const gradientId = `gradient-${dataKey}-${colorMode}`;
 
   // Custom tooltips
   const CustomTooltip = ({ active, payload }: any) => {

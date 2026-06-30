@@ -22,6 +22,10 @@ interface MemoryChartProps {
 
 const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB, colors }) => {
   const maxDomain = Math.ceil(totalGB) || 16;
+  const colorMode = useMetricsStore((state) => state.colorMode);
+  const usedGradId = `gradient-used-${colorMode}`;
+  const cachedGradId = `gradient-cached-${colorMode}`;
+  const buffersGradId = `gradient-buffers-${colorMode}`;
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -78,15 +82,15 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB, colors
           margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
         >
           <defs>
-            <linearGradient id="gradient-used" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={usedGradId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={colors.mem} stopOpacity={0.4} />
               <stop offset="95%" stopColor={colors.mem} stopOpacity={0.0} />
             </linearGradient>
-            <linearGradient id="gradient-cached" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={cachedGradId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={colors.cache} stopOpacity={0.4} />
               <stop offset="95%" stopColor={colors.cache} stopOpacity={0.0} />
             </linearGradient>
-            <linearGradient id="gradient-buffers" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={buffersGradId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={colors.buffers} stopOpacity={0.4} />
               <stop offset="95%" stopColor={colors.buffers} stopOpacity={0.0} />
             </linearGradient>
@@ -115,7 +119,7 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB, colors
             stroke={colors.mem}
             strokeWidth={1.5}
             fillOpacity={1}
-            fill="url(#gradient-used)"
+            fill={`url(#${usedGradId})`}
             name="Active"
             isAnimationActive={false}
           />
@@ -126,7 +130,7 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB, colors
             stroke={colors.cache}
             strokeWidth={1.5}
             fillOpacity={1}
-            fill="url(#gradient-cached)"
+            fill={`url(#${cachedGradId})`}
             name="Cache"
             isAnimationActive={false}
           />
@@ -137,7 +141,7 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB, colors
             stroke={colors.buffers}
             strokeWidth={1.5}
             fillOpacity={1}
-            fill="url(#gradient-buffers)"
+            fill={`url(#${buffersGradId})`}
             name="Buffers"
             isAnimationActive={false}
           />

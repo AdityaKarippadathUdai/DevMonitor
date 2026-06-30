@@ -21,6 +21,11 @@ interface DashboardMemoryChartProps {
 }
 
 const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDark, colors }) => {
+  const colorMode = useMetricsStore((state) => state.colorMode);
+  const activeId = `dash-gradient-active-${colorMode}`;
+  const cachedId = `dash-gradient-cached-${colorMode}`;
+  const buffersId = `dash-gradient-buffers-${colorMode}`;
+
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const activeVal = payload.find((p: any) => p.name === 'Active')?.value || 0;
@@ -73,15 +78,15 @@ const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDar
           margin={{ top: 5, right: 5, left: -40, bottom: 0 }}
         >
           <defs>
-            <linearGradient id="dash-gradient-active" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={activeId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={colors.mem} stopOpacity={0.3} />
               <stop offset="95%" stopColor={colors.mem} stopOpacity={0.0} />
             </linearGradient>
-            <linearGradient id="dash-gradient-cached" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={cachedId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={colors.cache} stopOpacity={0.3} />
               <stop offset="95%" stopColor={colors.cache} stopOpacity={0.0} />
             </linearGradient>
-            <linearGradient id="dash-gradient-buffers" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={buffersId} x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={colors.buffers} stopOpacity={0.3} />
               <stop offset="95%" stopColor={colors.buffers} stopOpacity={0.0} />
             </linearGradient>
@@ -106,7 +111,7 @@ const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDar
             stroke={colors.mem}
             strokeWidth={1.5}
             fillOpacity={1}
-            fill="url(#dash-gradient-active)"
+            fill={`url(#${activeId})`}
             name="Active"
             isAnimationActive={false}
           />
@@ -117,7 +122,7 @@ const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDar
             stroke={colors.cache}
             strokeWidth={1.5}
             fillOpacity={1}
-            fill="url(#dash-gradient-cached)"
+            fill={`url(#${cachedId})`}
             name="Cache"
             isAnimationActive={false}
           />
@@ -128,7 +133,7 @@ const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDar
             stroke={colors.buffers}
             strokeWidth={1.5}
             fillOpacity={1}
-            fill="url(#dash-gradient-buffers)"
+            fill={`url(#${buffersId})`}
             name="Buffers"
             isAnimationActive={false}
           />
