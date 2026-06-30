@@ -1,5 +1,5 @@
 import si from 'systeminformation';
-import { NetworkInterfaceInfo } from '../../src/types';
+import type { NetworkInterfaceInfo } from '../../shared/types.js';
 
 export async function getNetworkMetrics(): Promise<NetworkInterfaceInfo[]> {
   try {
