@@ -1,5 +1,4 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
-import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getAllMetrics, getSystemSpecs } from './services/system.js';
@@ -11,19 +10,9 @@ let mainWindow: BrowserWindow | null = null;
 let metricsInterval: NodeJS.Timeout | null = null;
 
 function resolvePreloadPath() {
-  const candidates = [
-    path.join(__dirname, 'preload.js'),
-    path.join(__dirname, 'preload.cjs'),
-  ];
-
-  for (const candidate of candidates) {
-    if (existsSync(candidate)) {
-      console.log(`[Electron] Using preload script at ${candidate}`);
-      return candidate;
-    }
-  }
-
-  return path.join(__dirname, 'preload.js');
+  const preloadPath = path.join(app.getAppPath(), 'electron', 'preload.cjs');
+  console.log(`[Electron] Using preload script at ${preloadPath}`);
+  return preloadPath;
 }
 
 async function loadAppContent(window: BrowserWindow) {
