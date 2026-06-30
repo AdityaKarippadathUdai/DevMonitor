@@ -1,9 +1,37 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
-import * as path from 'path';
-import { getAllMetrics, getSystemSpecs } from './services/system';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { getAllMetrics, getSystemSpecs } from './services/system.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
 let metricsInterval: NodeJS.Timeout | null = null;
+
+async function loadAppContent(window: BrowserWindow) {
+  if (!app.isPackaged) {
+    const candidates = [
+      process.env.VITE_DEV_SERVER_URL,
+      'http://127.0.0.1:5173',
+      'http://localhost:5173',
+    ].filter((value): value is string => Boolean(value));
+
+    for (let attempt = 0; attempt < candidates.length; attempt += 1) {
+      try {
+        await window.loadURL(candidates[attempt]);
+        return;
+      } catch (error) {
+        console.warn(`Failed to load ${candidates[attempt]}:`, error);
+        if (attempt < candidates.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 750));
+        }
+      }
+    }
+  }
+
+  await window.loadFile(path.join(__dirname, '../index.html'));
+}
 
 async function createWindow() {
   mainWindow = new BrowserWindow({
@@ -12,23 +40,17 @@ async function createWindow() {
     minWidth: 900,
     minHeight: 600,
     title: 'Resource Monitor',
-    frame: true, // Native window borders for maximum system fidelity, or custom-titlebar-friendly
-    backgroundColor: '#0f172a', // Slate-900 background to match our theme
+    frame: true,
+    backgroundColor: '#0f172a',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   });
 
-  // Load URL in dev, or file path in prod
-  if (process.env.VITE_DEV_SERVER_URL) {
-    await mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-  } else {
-    await mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
-  }
+  await loadAppContent(mainWindow);
 
-  // Set up background polling ticker (500ms as requested)
   startMetricsPolling();
 
   mainWindow.on('closed', () => {
