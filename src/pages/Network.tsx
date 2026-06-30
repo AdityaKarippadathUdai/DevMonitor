@@ -107,7 +107,7 @@ export const Network: React.FC = () => {
         isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
       }`}>
         <h3 className="font-semibold text-sm mb-5 flex items-center gap-2">
-          <NetIcon className="w-4 h-4 text-indigo-400" />
+          <NetIcon className="w-4 h-4" style={{ color: colors.network }} />
           <span>Configured Network Interfaces</span>
         </h3>
 
@@ -120,18 +120,18 @@ export const Network: React.FC = () => {
               }`}
             >
               <div>
-                <span className="font-bold text-sm block text-indigo-400">{net.name || 'Interface'}</span>
+                <span className="font-bold text-sm block" style={{ color: colors.network }}>{net.name || 'Interface'}</span>
                 <span className="text-[10px] text-slate-500 mt-0.5 block">IP Address: {net.ip4 || 'No IP'}</span>
               </div>
               
               <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800/10">
                 <div>
                   <span className="text-slate-500 text-[10px] uppercase font-semibold block">Down Speed</span>
-                  <span className="font-bold text-emerald-400">{formatSpeed(net.rxRate || 0)}</span>
+                  <span className="font-bold" style={{ color: colors.network }}>{formatSpeed(net.rxRate || 0)}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 text-[10px] uppercase font-semibold block">Up Speed</span>
-                  <span className="font-bold text-indigo-400">{formatSpeed(net.txRate || 0)}</span>
+                  <span className="font-bold" style={{ color: colors.mem }}>{formatSpeed(net.txRate || 0)}</span>
                 </div>
               </div>
             </div>

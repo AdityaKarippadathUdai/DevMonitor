@@ -108,7 +108,7 @@ export const Disk: React.FC = () => {
         isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
       }`}>
         <h3 className="font-semibold text-sm mb-5 flex items-center gap-2">
-          <HardDrive className="w-4 h-4 text-amber-500" />
+          <HardDrive className="w-4 h-4" style={{ color: colors.disk }} />
           <span>Mounted Storage Volumes</span>
         </h3>
 
@@ -134,12 +134,12 @@ export const Disk: React.FC = () => {
               <div className="flex-1 max-w-md w-full space-y-2">
                 <div className="flex justify-between text-xs font-mono">
                   <span className="text-slate-500">Utilization Space:</span>
-                  <span className="font-semibold text-amber-400">{(disk.usePercentage || 0).toFixed(1)}% Used</span>
+                  <span className="font-semibold" style={{ color: colors.disk }}>{(disk.usePercentage || 0).toFixed(1)}% Used</span>
                 </div>
                 <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
                   <div 
-                    className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-300"
-                    style={{ width: `${disk.usePercentage || 0}%` }}
+                    className="h-full transition-all duration-300"
+                    style={{ width: `${disk.usePercentage || 0}%`, background: `linear-gradient(to right, ${colors.disk}, ${colors.disk}dd)` }}
                   ></div>
                 </div>
                 <div className="flex justify-between text-[10px] font-mono text-slate-500">

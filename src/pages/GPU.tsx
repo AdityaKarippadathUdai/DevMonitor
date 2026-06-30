@@ -158,7 +158,7 @@ export const GPU: React.FC = () => {
                   <div className={`p-4 rounded-xl border flex items-center gap-3 font-mono ${
                     isDark ? 'bg-slate-950/30 border-slate-800/50' : 'bg-slate-50 border-slate-250'
                   }`}>
-                    <Gauge className="w-4 h-4 text-cyan-400 shrink-0" />
+                    <Gauge className="w-4 h-4 shrink-0" style={{ color: colors.gpu }} />
                     <div>
                       <span className="text-[9px] text-slate-500 block uppercase font-bold">GPU Clock</span>
                       <span className="font-bold text-xs">{gpu.gpuClock !== null ? `${gpu.gpuClock} MHz` : 'Dynamic'}</span>
@@ -169,7 +169,7 @@ export const GPU: React.FC = () => {
                   <div className={`p-4 rounded-xl border flex items-center gap-3 font-mono ${
                     isDark ? 'bg-slate-950/30 border-slate-800/50' : 'bg-slate-50 border-slate-250'
                   }`}>
-                    <Gauge className="w-4 h-4 text-pink-400 shrink-0" />
+                    <Gauge className="w-4 h-4 shrink-0" style={{ color: colors.mem }} />
                     <div>
                       <span className="text-[9px] text-slate-500 block uppercase font-bold">VRAM Clock</span>
                       <span className="font-bold text-xs">{gpu.memoryClock !== null ? `${gpu.memoryClock} MHz` : 'Dynamic'}</span>

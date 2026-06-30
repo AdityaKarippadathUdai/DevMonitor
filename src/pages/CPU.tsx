@@ -118,7 +118,7 @@ export const CPU: React.FC = () => {
           <div className={`mt-4 p-3 rounded-xl border flex items-center gap-3 ${
             isDark ? 'bg-slate-950/40 border-slate-800/60' : 'bg-slate-55/10 border-slate-100'
           }`}>
-            <Server className="w-5 h-5 text-cyan-400 shrink-0" />
+            <Server className="w-5 h-5 shrink-0" style={{ color: colors.cpu }} />
             <div className="text-[10px] leading-relaxed">
               <span className="font-semibold text-slate-400">Diagnostic Status: </span>
               {(cpu?.usage || 0) > 85 ? (
@@ -148,12 +148,12 @@ export const CPU: React.FC = () => {
               >
                 <div className="flex justify-between items-center text-[10px]">
                   <span className="text-slate-500 font-semibold">Core {idx}</span>
-                  <span className="text-cyan-400 font-bold">{loadVal.toFixed(0)}%</span>
+                  <span className="font-bold" style={{ color: colors.cpu }}>{loadVal.toFixed(0)}%</span>
                 </div>
                 <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-cyan-400 transition-all duration-300"
-                    style={{ width: `${loadVal}%` }}
+                    className="h-full transition-all duration-300"
+                    style={{ width: `${loadVal}%`, backgroundColor: colors.cpu }}
                   ></div>
                 </div>
               </div>
@@ -168,7 +168,7 @@ export const CPU: React.FC = () => {
       }`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
           <div className="flex items-center gap-2.5">
-            <Terminal className="w-4 h-4 text-cyan-400" />
+            <Terminal className="w-4 h-4" style={{ color: colors.cpu }} />
             <h3 className="font-semibold text-sm">Top Running Processes by Processor Load</h3>
           </div>
           
@@ -217,7 +217,7 @@ export const CPU: React.FC = () => {
                   }`}>
                     <td className="py-2.5 text-slate-500 font-bold">{pidVal}</td>
                     <td className="py-2.5 font-bold truncate max-w-[180px]">{nameVal}</td>
-                    <td className="py-2.5 text-right text-cyan-400 font-bold">{cpuVal.toFixed(1)}%</td>
+                    <td className="py-2.5 text-right font-bold" style={{ color: colors.cpu }}>{cpuVal.toFixed(1)}%</td>
                     <td className="py-2.5 text-right font-medium">{memVal.toFixed(1)}%</td>
                     <td className="py-2.5 text-right text-slate-500">{userVal}</td>
                   </tr>

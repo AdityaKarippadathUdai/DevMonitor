@@ -345,15 +345,15 @@ export const Memory: React.FC = () => {
             {/* Segment legend */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-pink-500"></span>
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colors.mem }}></span>
                 <span>Active Process ({activeGB} GB)</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colors.cache }}></span>
                 <span>Caches ({cachedGB} GB)</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colors.buffers }}></span>
                 <span>Buffers ({buffersGB} GB)</span>
               </div>
               <div className="flex items-center gap-2">
@@ -370,7 +370,10 @@ export const Memory: React.FC = () => {
         }`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-sm">Swap Virtual Page File</h3>
-            <span className="text-xs font-mono text-indigo-400 font-bold bg-indigo-950/20 px-2 py-0.5 rounded-full">
+            <span 
+              className="text-xs font-mono font-bold px-2 py-0.5 rounded-full border"
+              style={{ color: colors.cache, backgroundColor: `${colors.cache}10`, borderColor: `${colors.cache}30` }}
+            >
               {swapPercentage.toFixed(1)}% Used
             </span>
           </div>
@@ -387,15 +390,15 @@ export const Memory: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Virtual Swap Remaining:</span>
-                <span className="font-bold text-indigo-400">{(Number(swapTotalGB) - Number(swapUsedGB)).toFixed(2)} GB</span>
+                <span className="font-bold" style={{ color: colors.cache }}>{(Number(swapTotalGB) - Number(swapUsedGB)).toFixed(2)} GB</span>
               </div>
             </div>
 
             {/* Swap indicator */}
             <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
               <div 
-                className="h-full bg-gradient-to-r from-indigo-500 to-pink-500 transition-all duration-300"
-                style={{ width: `${swapPercentage}%` }}
+                className="h-full transition-all duration-300"
+                style={{ width: `${swapPercentage}%`, background: `linear-gradient(to right, ${colors.cache}, ${colors.mem})` }}
               ></div>
             </div>
           </div>
