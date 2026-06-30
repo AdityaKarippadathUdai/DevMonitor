@@ -24,6 +24,7 @@ export interface MemoryMetrics {
   total: number; // in bytes
   free: number;
   used: number;
+  active: number; // in bytes
   available: number;
   cached: number;
   buffers: number;

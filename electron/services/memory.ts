@@ -11,6 +11,7 @@ export async function getMemoryMetrics(): Promise<MemoryMetrics> {
     const available = mem.available || 0;
     const cached = mem.cached || 0;
     const buffers = mem.buffers || 0;
+    const active = mem.active || Math.max(0, used - cached - buffers);
     const swapTotal = mem.swaptotal || 0;
     const swapUsed = mem.swapused || 0;
 
@@ -21,6 +22,7 @@ export async function getMemoryMetrics(): Promise<MemoryMetrics> {
       total,
       free,
       used,
+      active,
       available,
       cached,
       buffers,
@@ -34,6 +36,7 @@ export async function getMemoryMetrics(): Promise<MemoryMetrics> {
       total: 0,
       free: 0,
       used: 0,
+      active: 0,
       available: 0,
       cached: 0,
       buffers: 0,

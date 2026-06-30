@@ -107,7 +107,7 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB }) => {
           <Tooltip content={<CustomTooltip />} />
           <Area
             type="monotone"
-            dataKey="used"
+            dataKey="active"
             stackId="1"
             stroke="#ec4899"
             strokeWidth={1.5}
@@ -167,7 +167,7 @@ export const Memory: React.FC = () => {
     const timeLabel = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
     return {
       timeLabel,
-      used: (m.memory?.used || 0) / (1024 ** 3),
+      active: (m.memory?.active || 0) / (1024 ** 3),
       cached: (m.memory?.cached || 0) / (1024 ** 3),
       buffers: (m.memory?.buffers || 0) / (1024 ** 3),
     };
@@ -176,12 +176,13 @@ export const Memory: React.FC = () => {
   const mem = currentMetrics.memory;
 
   // Safe division check
-  const activeGB = formatGB(mem?.available || 0);
+  const activeGB = formatGB(mem?.active || 0);
   const totalGB = formatGB(mem?.total || 0);
   const usedGB = formatGB(mem?.used || 0);
   const freeGB = formatGB(mem?.free || 0);
   const cachedGB = formatGB(mem?.cached || 0);
   const buffersGB = formatGB(mem?.buffers || 0);
+  const availableGB = formatGB(mem?.available || 0);
   const swapUsedGB = formatGB(mem?.swapUsed || 0);
   const swapTotalGB = formatGB(mem?.swapTotal || 0);
 
@@ -209,7 +210,7 @@ export const Memory: React.FC = () => {
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[10px] font-mono text-slate-500">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-pink-500"></span>
-                  Active Used ({usedGB} GB)
+                  Active Process ({activeGB} GB)
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
@@ -241,20 +242,20 @@ export const Memory: React.FC = () => {
             <h3 className="font-semibold text-sm mb-4">Usage Summary</h3>
             <div className="space-y-3 font-mono text-xs">
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
-                <span className="text-slate-500">In Use (Active):</span>
-                <span className="font-bold text-pink-400">{usedGB} GB</span>
-              </div>
-              <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
-                <span className="text-slate-500">Available:</span>
-                <span className="font-semibold">{activeGB} GB</span>
+                <span className="text-slate-500">Active (Processes):</span>
+                <span className="font-bold text-pink-400">{activeGB} GB</span>
               </div>
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Cache Blocks:</span>
-                <span className="font-semibold">{cachedGB} GB</span>
+                <span className="font-semibold text-indigo-400">{cachedGB} GB</span>
               </div>
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Buffers:</span>
-                <span className="font-semibold">{buffersGB} GB</span>
+                <span className="font-semibold text-purple-400">{buffersGB} GB</span>
+              </div>
+              <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
+                <span className="text-slate-500">Available (Freeable):</span>
+                <span className="font-semibold text-emerald-400">{availableGB} GB</span>
               </div>
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Free Space:</span>
@@ -297,10 +298,10 @@ export const Memory: React.FC = () => {
             <div className="h-6 rounded-full overflow-hidden flex bg-slate-800 font-mono text-[9px] text-white">
               <div 
                 className="bg-pink-500 flex items-center justify-center font-bold" 
-                style={{ width: `${(mem?.total || 0) > 0 ? ((mem?.used || 0) / (mem?.total || 1)) * 100 : 0}%` }}
-                title={`Used Memory: ${usedGB} GB`}
+                style={{ width: `${(mem?.total || 0) > 0 ? ((mem?.active || 0) / (mem?.total || 1)) * 100 : 0}%` }}
+                title={`Active Processes RAM: ${activeGB} GB`}
               >
-                {(mem?.total || 0) > 0 && ((mem?.used || 0) / (mem?.total || 1)) * 100 > 12 && 'USED'}
+                {(mem?.total || 0) > 0 && ((mem?.active || 0) / (mem?.total || 1)) * 100 > 12 && 'ACTIVE'}
               </div>
               <div 
                 className="bg-indigo-500 flex items-center justify-center font-bold" 
@@ -329,7 +330,7 @@ export const Memory: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-pink-500"></span>
-                <span>Active Used ({usedGB} GB)</span>
+                <span>Active Process ({activeGB} GB)</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
