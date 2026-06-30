@@ -19,22 +19,26 @@ export const CPU: React.FC = () => {
 
   // Map history to CPU load points
   const chartData = history.map((m) => {
-    const time = new Date(m.timestamp);
+    const time = new Date(m.timestamp || Date.now());
     const timeLabel = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
     return {
       timeLabel,
-      cpu: m.cpu.usage,
+      cpu: m.cpu?.usage || 0,
     };
   });
 
   const cpu = currentMetrics.cpu;
+  const processes = cpu?.processes || [];
 
   // Filter processes
-  const filteredProcesses = cpu.processes.filter((proc) =>
-    proc.name.toLowerCase().includes(filterQuery.toLowerCase()) ||
-    proc.pid.toString().includes(filterQuery) ||
-    proc.user.toLowerCase().includes(filterQuery.toLowerCase())
-  );
+  const filteredProcesses = processes.filter((proc) => {
+    const name = proc.name || '';
+    const pid = proc.pid !== undefined && proc.pid !== null ? proc.pid.toString() : '';
+    const user = proc.user || '';
+    return name.toLowerCase().includes(filterQuery.toLowerCase()) ||
+      pid.includes(filterQuery) ||
+      user.toLowerCase().includes(filterQuery.toLowerCase());
+  });
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -78,29 +82,29 @@ export const CPU: React.FC = () => {
             <div className="space-y-3 font-mono text-xs">
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Processor:</span>
-                <span className="font-semibold text-right truncate max-w-[180px]">{cpu.brand}</span>
+                <span className="font-semibold text-right truncate max-w-[180px]">{cpu?.brand || 'Unknown CPU'}</span>
               </div>
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Physical Cores:</span>
-                <span className="font-semibold">{cpu.physicalCores}</span>
+                <span className="font-semibold">{cpu?.physicalCores || 0}</span>
               </div>
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Logical Cores:</span>
-                <span className="font-semibold">{cpu.logicalCores}</span>
+                <span className="font-semibold">{cpu?.logicalCores || 0}</span>
               </div>
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Frequency:</span>
-                <span className="font-semibold">{cpu.frequency.toFixed(2)} GHz</span>
+                <span className="font-semibold">{(cpu?.frequency || 0).toFixed(2)} GHz</span>
               </div>
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Load Average:</span>
-                <span className="font-semibold">{cpu.loadAverage.map(v => v.toFixed(2)).join(' • ')}</span>
+                <span className="font-semibold">{(cpu?.loadAverage || []).map(v => (v || 0).toFixed(2)).join(' • ')}</span>
               </div>
               <div className="flex justify-between pb-1">
                 <span className="text-slate-500">Temperature:</span>
                 <span className="font-semibold flex items-center gap-1">
                   <Flame className="w-3.5 h-3.5 text-orange-500" />
-                  {cpu.temperature !== null ? `${cpu.temperature.toFixed(0)}°C` : 'Sensor Blocked'}
+                  {cpu?.temperature !== null && cpu?.temperature !== undefined ? `${(cpu.temperature || 0).toFixed(0)}°C` : 'Sensor Blocked'}
                 </span>
               </div>
             </div>
@@ -112,7 +116,7 @@ export const CPU: React.FC = () => {
             <Server className="w-5 h-5 text-cyan-400 shrink-0" />
             <div className="text-[10px] leading-relaxed">
               <span className="font-semibold text-slate-400">Diagnostic Status: </span>
-              {cpu.usage > 85 ? (
+              {(cpu?.usage || 0) > 85 ? (
                 <span className="text-rose-400 font-bold">Throttling limits reached</span>
               ) : (
                 <span className="text-emerald-400 font-bold">Operational • Safe Temps</span>
@@ -128,25 +132,28 @@ export const CPU: React.FC = () => {
       }`}>
         <h3 className="font-semibold text-sm mb-4">Logical Cores Utilization</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3.5">
-          {cpu.cores.map((coreLoad, idx) => (
-            <div 
-              key={idx} 
-              className={`p-3 rounded-xl border flex flex-col justify-between font-mono gap-1.5 ${
-                isDark ? 'bg-slate-950/40 border-slate-800/60' : 'bg-slate-50 border-slate-200'
-              }`}
-            >
-              <div className="flex justify-between items-center text-[10px]">
-                <span className="text-slate-500 font-semibold">Core {idx}</span>
-                <span className="text-cyan-400 font-bold">{coreLoad.toFixed(0)}%</span>
+          {(cpu?.cores || []).map((coreLoad, idx) => {
+            const loadVal = coreLoad || 0;
+            return (
+              <div 
+                key={idx} 
+                className={`p-3 rounded-xl border flex flex-col justify-between font-mono gap-1.5 ${
+                  isDark ? 'bg-slate-950/40 border-slate-800/60' : 'bg-slate-50 border-slate-200'
+                }`}
+              >
+                <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-slate-500 font-semibold">Core {idx}</span>
+                  <span className="text-cyan-400 font-bold">{loadVal.toFixed(0)}%</span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-cyan-400 transition-all duration-300"
+                    style={{ width: `${loadVal}%` }}
+                  ></div>
+                </div>
               </div>
-              <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-cyan-400 transition-all duration-300"
-                  style={{ width: `${coreLoad}%` }}
-                ></div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -192,17 +199,25 @@ export const CPU: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/10">
-              {filteredProcesses.map((proc, idx) => (
-                <tr key={idx} className={`hover:bg-slate-800/10 transition-colors ${
-                  isDark ? 'text-slate-300' : 'text-slate-800'
-                }`}>
-                  <td className="py-2.5 text-slate-500 font-bold">{proc.pid}</td>
-                  <td className="py-2.5 font-bold truncate max-w-[180px]">{proc.name}</td>
-                  <td className="py-2.5 text-right text-cyan-400 font-bold">{proc.cpu.toFixed(1)}%</td>
-                  <td className="py-2.5 text-right font-medium">{proc.mem.toFixed(1)}%</td>
-                  <td className="py-2.5 text-right text-slate-500">{proc.user}</td>
-                </tr>
-              ))}
+              {filteredProcesses.map((proc, idx) => {
+                const pidVal = proc.pid || 0;
+                const nameVal = proc.name || 'Unknown';
+                const cpuVal = proc.cpu || 0;
+                const memVal = proc.mem || 0;
+                const userVal = proc.user || 'system';
+
+                return (
+                  <tr key={idx} className={`hover:bg-slate-800/10 transition-colors ${
+                    isDark ? 'text-slate-300' : 'text-slate-800'
+                  }`}>
+                    <td className="py-2.5 text-slate-500 font-bold">{pidVal}</td>
+                    <td className="py-2.5 font-bold truncate max-w-[180px]">{nameVal}</td>
+                    <td className="py-2.5 text-right text-cyan-400 font-bold">{cpuVal.toFixed(1)}%</td>
+                    <td className="py-2.5 text-right font-medium">{memVal.toFixed(1)}%</td>
+                    <td className="py-2.5 text-right text-slate-500">{userVal}</td>
+                  </tr>
+                );
+              })}
               {filteredProcesses.length === 0 && (
                 <tr>
                   <td colSpan={5} className="py-6 text-center text-slate-400">

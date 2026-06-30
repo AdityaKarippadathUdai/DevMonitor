@@ -20,7 +20,7 @@ export const Dashboard: React.FC = () => {
 
   // Map history to simple arrays for sparkline plotting
   const chartData = history.map((m) => {
-    const time = new Date(m.timestamp);
+    const time = new Date(m.timestamp || Date.now());
     const timeLabel = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
     
     // Safety check on GPU availability
@@ -28,31 +28,32 @@ export const Dashboard: React.FC = () => {
 
     return {
       timeLabel,
-      cpu: m.cpu.usage,
-      mem: m.memory.percentage,
-      gpu: primaryGpu ? primaryGpu.utilization : 0,
-      vram: primaryGpu ? primaryGpu.vramPercentage : 0,
+      cpu: m.cpu?.usage || 0,
+      mem: m.memory?.percentage || 0,
+      gpu: primaryGpu ? primaryGpu.utilization || 0 : 0,
+      vram: primaryGpu ? primaryGpu.vramPercentage || 0 : 0,
     };
   });
 
   // Safe RAM values
-  const ramTotalGB = (currentMetrics.memory.total / (1024 ** 3)).toFixed(1);
-  const ramUsedGB = (currentMetrics.memory.used / (1024 ** 3)).toFixed(1);
+  const ramTotalGB = ((currentMetrics.memory?.total || 0) / (1024 ** 3)).toFixed(1);
+  const ramUsedGB = ((currentMetrics.memory?.used || 0) / (1024 ** 3)).toFixed(1);
 
   // Status indicators based on load threshold
   const getStatus = (usage: number) => {
-    if (usage < 50) return { label: 'Optimal', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
-    if (usage < 85) return { label: 'Elevated', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
+    const val = usage || 0;
+    if (val < 50) return { label: 'Optimal', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' };
+    if (val < 85) return { label: 'Elevated', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' };
     return { label: 'Heavy Load', color: 'bg-rose-500/10 text-rose-400 border-rose-500/20' };
   };
 
-  const cpuStatus = getStatus(currentMetrics.cpu.usage);
-  const ramStatus = getStatus(currentMetrics.memory.percentage);
+  const cpuStatus = getStatus(currentMetrics.cpu?.usage || 0);
+  const ramStatus = getStatus(currentMetrics.memory?.percentage || 0);
 
   // GPU Specs
   const gpuDetected = currentMetrics.gpus && currentMetrics.gpus.length > 0;
   const primaryGpu = gpuDetected ? currentMetrics.gpus[0] : null;
-  const gpuStatus = primaryGpu ? getStatus(primaryGpu.utilization) : null;
+  const gpuStatus = primaryGpu ? getStatus(primaryGpu.utilization || 0) : null;
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -87,7 +88,7 @@ export const Dashboard: React.FC = () => {
                 <div>
                   <h3 className="font-semibold text-sm">Processor</h3>
                   <p className={`text-[10px] truncate max-w-[150px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {currentMetrics.cpu.brand}
+                    {currentMetrics.cpu?.brand || 'Unknown CPU'}
                   </p>
                 </div>
               </div>
@@ -101,7 +102,7 @@ export const Dashboard: React.FC = () => {
 
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-bold tracking-tight font-mono">
-                {currentMetrics.cpu.usage.toFixed(1)}
+                {(currentMetrics.cpu?.usage || 0).toFixed(1)}
               </span>
               <span className="text-sm font-medium text-slate-500">%</span>
             </div>
@@ -121,11 +122,11 @@ export const Dashboard: React.FC = () => {
           <div className="grid grid-cols-2 gap-2 mt-4 text-[11px] font-mono">
             <div>
               <span className="text-slate-500">Speed:</span>{' '}
-              <span className="font-semibold">{currentMetrics.cpu.frequency.toFixed(2)} GHz</span>
+              <span className="font-semibold">{(currentMetrics.cpu?.frequency || 0).toFixed(2)} GHz</span>
             </div>
             <div>
               <span className="text-slate-500">Threads:</span>{' '}
-              <span className="font-semibold">{currentMetrics.cpu.threads}</span>
+              <span className="font-semibold">{currentMetrics.cpu?.threads || 0}</span>
             </div>
           </div>
         </div>
@@ -162,7 +163,7 @@ export const Dashboard: React.FC = () => {
 
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-bold tracking-tight font-mono">
-                {currentMetrics.memory.percentage.toFixed(1)}
+                {(currentMetrics.memory?.percentage || 0).toFixed(1)}
               </span>
               <span className="text-sm font-medium text-slate-500">%</span>
             </div>
@@ -307,24 +308,33 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {currentMetrics.disks.map((disk, idx) => (
-              <div key={idx} className="space-y-1.5">
-                <div className="flex justify-between text-xs font-mono">
-                  <span className="font-medium truncate max-w-[200px]">{disk.name} ({disk.type})</span>
-                  <span className="text-slate-500">
-                    {disk.usePercentage.toFixed(0)}% used • {((disk.size - disk.used) / (1024 ** 3)).toFixed(1)} GB free
-                  </span>
+            {(currentMetrics.disks || []).map((disk, idx) => {
+              const diskName = disk.name || 'Drive';
+              const diskType = disk.type || 'SSD';
+              const diskUsePercent = disk.usePercentage || 0;
+              const diskSize = disk.size || 0;
+              const diskUsed = disk.used || 0;
+              const diskFreeGB = ((diskSize - diskUsed) / (1024 ** 3)).toFixed(1);
+
+              return (
+                <div key={idx} className="space-y-1.5">
+                  <div className="flex justify-between text-xs font-mono">
+                    <span className="font-medium truncate max-w-[200px]">{diskName} ({diskType})</span>
+                    <span className="text-slate-500">
+                      {diskUsePercent.toFixed(0)}% used • {diskFreeGB} GB free
+                    </span>
+                  </div>
+                  {/* Progress bar */}
+                  <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <div 
+                      className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-500"
+                      style={{ width: `${diskUsePercent}%` }}
+                    ></div>
+                  </div>
                 </div>
-                {/* Progress bar */}
-                <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  <div 
-                    className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-500"
-                    style={{ width: `${disk.usePercentage}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-            {currentMetrics.disks.length === 0 && (
+              );
+            })}
+            {(!currentMetrics.disks || currentMetrics.disks.length === 0) && (
               <p className="text-xs text-slate-400 font-mono">Scanning drive arrays...</p>
             )}
           </div>
@@ -346,34 +356,40 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="space-y-3.5">
-            {currentMetrics.network.map((net, idx) => {
+            {(currentMetrics.network || []).map((net, idx) => {
               const formatRate = (bytesSec: number) => {
-                if (bytesSec === 0) return '0 B/s';
-                if (bytesSec < 1024) return `${bytesSec.toFixed(0)} B/s`;
-                if (bytesSec < 1024 * 1024) return `${(bytesSec / 1024).toFixed(1)} KB/s`;
-                return `${(bytesSec / (1024 * 1024)).toFixed(1)} MB/s`;
+                const b = bytesSec || 0;
+                if (b === 0) return '0 B/s';
+                if (b < 1024) return `${b.toFixed(0)} B/s`;
+                if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB/s`;
+                return `${(b / (1024 * 1024)).toFixed(1)} MB/s`;
               };
+
+              const netName = net.name || 'Interface';
+              const netIp4 = net.ip4 || 'No IP';
+              const rxRate = net.rxRate || 0;
+              const txRate = net.txRate || 0;
 
               return (
                 <div key={idx} className="flex justify-between items-center text-xs border-b border-slate-800/10 pb-2 last:border-none last:pb-0">
                   <div className="font-mono">
-                    <span className="font-semibold">{net.name}</span>
-                    <span className="text-[10px] text-slate-500 block">{net.ip4}</span>
+                    <span className="font-semibold">{netName}</span>
+                    <span className="text-[10px] text-slate-500 block">{netIp4}</span>
                   </div>
                   <div className="font-mono text-right">
                     <div className="text-emerald-400 flex items-center justify-end gap-1">
                       <span className="text-[9px] uppercase font-medium">Down</span>
-                      <span className="font-bold">{formatRate(net.rxRate)}</span>
+                      <span className="font-bold">{formatRate(rxRate)}</span>
                     </div>
                     <div className="text-indigo-400 flex items-center justify-end gap-1">
                       <span className="text-[9px] uppercase font-medium">Up</span>
-                      <span className="font-bold">{formatRate(net.txRate)}</span>
+                      <span className="font-bold">{formatRate(txRate)}</span>
                     </div>
                   </div>
                 </div>
               );
             })}
-            {currentMetrics.network.length === 0 && (
+            {(!currentMetrics.network || currentMetrics.network.length === 0) && (
               <p className="text-xs text-slate-400 font-mono">Awaiting network statistics...</p>
             )}
           </div>

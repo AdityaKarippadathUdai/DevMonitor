@@ -140,31 +140,31 @@ export const Memory: React.FC = () => {
             <div className="h-6 rounded-full overflow-hidden flex bg-slate-800 font-mono text-[9px] text-white">
               <div 
                 className="bg-pink-500 flex items-center justify-center font-bold" 
-                style={{ width: `${(mem.used / mem.total) * 100}%` }}
+                style={{ width: `${mem.total > 0 ? (mem.used / mem.total) * 100 : 0}%` }}
                 title={`Used Memory: ${usedGB} GB`}
               >
-                {(mem.used / mem.total) * 100 > 12 && 'USED'}
+                {mem.total > 0 && (mem.used / mem.total) * 100 > 12 && 'USED'}
               </div>
               <div 
                 className="bg-indigo-500 flex items-center justify-center font-bold" 
-                style={{ width: `${(mem.cached / mem.total) * 100}%` }}
+                style={{ width: `${mem.total > 0 ? (mem.cached / mem.total) * 100 : 0}%` }}
                 title={`Cached Memory: ${cachedGB} GB`}
               >
-                {(mem.cached / mem.total) * 100 > 12 && 'CACHE'}
+                {mem.total > 0 && (mem.cached / mem.total) * 100 > 12 && 'CACHE'}
               </div>
               <div 
                 className="bg-purple-400 flex items-center justify-center font-bold" 
-                style={{ width: `${(mem.buffers / mem.total) * 100}%` }}
+                style={{ width: `${mem.total > 0 ? (mem.buffers / mem.total) * 100 : 0}%` }}
                 title={`Buffers: ${buffersGB} GB`}
               >
-                {(mem.buffers / mem.total) * 100 > 12 && 'BUFFERS'}
+                {mem.total > 0 && (mem.buffers / mem.total) * 100 > 12 && 'BUFFERS'}
               </div>
               <div 
                 className="bg-emerald-500 flex items-center justify-center font-bold text-slate-900" 
-                style={{ width: `${(mem.free / mem.total) * 100}%` }}
+                style={{ width: `${mem.total > 0 ? (mem.free / mem.total) * 100 : 0}%` }}
                 title={`Free Memory: ${freeGB} GB`}
               >
-                {(mem.free / mem.total) * 100 > 12 && 'FREE'}
+                {mem.total > 0 && (mem.free / mem.total) * 100 > 12 && 'FREE'}
               </div>
             </div>
 

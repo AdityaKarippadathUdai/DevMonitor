@@ -54,7 +54,7 @@ export async function getCpuMetrics(): Promise<CpuMetrics> {
       }));
 
     // Handle per-core utilization safely
-    const coreLoads = currentLoad.cpus.map((core) => core.load);
+    const coreLoads = (currentLoad.cpus || []).map((core) => core.load);
 
     return {
       usage: currentLoad.currentLoad,

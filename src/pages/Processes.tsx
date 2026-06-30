@@ -41,11 +41,14 @@ export const Processes: React.FC = () => {
   const processes = currentMetrics.cpu.processes || [];
 
   // Filter processes
-  const filtered = processes.filter((proc) =>
-    proc.name.toLowerCase().includes(filterQuery.toLowerCase()) ||
-    proc.pid.toString().includes(filterQuery) ||
-    proc.user.toLowerCase().includes(filterQuery.toLowerCase())
-  );
+  const filtered = processes.filter((proc) => {
+    const name = proc.name || '';
+    const pid = proc.pid !== undefined && proc.pid !== null ? proc.pid.toString() : '';
+    const user = proc.user || '';
+    return name.toLowerCase().includes(filterQuery.toLowerCase()) ||
+      pid.includes(filterQuery) ||
+      user.toLowerCase().includes(filterQuery.toLowerCase());
+  });
 
   // Sort processes
   const sorted = [...filtered].sort((a, b) => {
@@ -153,32 +156,38 @@ export const Processes: React.FC = () => {
             <tbody className="divide-y divide-slate-800/10">
               {sorted.map((proc) => {
                 // Approximate memory size in MB from process mem percentage or systems
-                const totalSystemRam = currentMetrics.memory.total;
+                const totalSystemRam = currentMetrics.memory?.total || 0;
+                const procCpu = proc.cpu || 0;
+                const procMem = proc.mem || 0;
+                const procPid = proc.pid || 0;
+                const procName = proc.name || 'Unknown';
+                const procUser = proc.user || 'system';
+
                 const approxMemMB = totalSystemRam > 0 
-                  ? ((proc.mem / 100) * totalSystemRam / (1024 * 1024)).toFixed(1) 
+                  ? ((procMem / 100) * totalSystemRam / (1024 * 1024)).toFixed(1) 
                   : 'N/A';
 
                 return (
                   <tr 
-                    key={proc.pid} 
+                    key={procPid} 
                     className={`hover:bg-slate-800/5 transition-colors ${
                       isDark ? 'text-slate-300' : 'text-slate-800'
                     }`}
                   >
-                    <td className="py-3 text-slate-500 font-bold">{proc.pid}</td>
-                    <td className="py-3 font-bold truncate max-w-[220px]" title={proc.name}>
-                      {proc.name}
+                    <td className="py-3 text-slate-500 font-bold">{procPid}</td>
+                    <td className="py-3 font-bold truncate max-w-[220px]" title={procName}>
+                      {procName}
                     </td>
                     <td className="py-3 text-right text-cyan-400 font-bold">
-                      {proc.cpu.toFixed(1)}%
+                      {procCpu.toFixed(1)}%
                     </td>
                     <td className="py-3 text-right font-medium">
-                      {proc.mem.toFixed(1)}%
+                      {procMem.toFixed(1)}%
                     </td>
                     <td className="py-3 text-right text-slate-400 font-medium">
                       {approxMemMB !== 'N/A' ? `${approxMemMB} MB` : 'N/A'}
                     </td>
-                    <td className="py-3 text-right text-slate-500 font-medium">{proc.user}</td>
+                    <td className="py-3 text-right text-slate-500 font-medium">{procUser}</td>
                   </tr>
                 );
               })}
