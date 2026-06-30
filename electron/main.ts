@@ -69,7 +69,9 @@ async function createWindow() {
 
   console.log('[Electron] BrowserWindow created');
 
-  await loadAppContent(mainWindow);
+  mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    console.log(`[Renderer ${level}] ${message} [${sourceId}:${line}]`);
+  });
 
   mainWindow.webContents.on('did-finish-load', async () => {
     try {
@@ -88,6 +90,8 @@ async function createWindow() {
       console.error('[Electron] Failed to inspect renderer bridge:', error);
     }
   });
+
+  await loadAppContent(mainWindow);
 
   console.log('[Electron] Renderer loaded, starting metrics polling');
   startMetricsPolling();
