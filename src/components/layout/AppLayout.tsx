@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useMetricsStore } from '../../store/useMetricsStore';
+import { SettingsDrawer } from './SettingsDrawer';
 import { 
   LayoutDashboard, 
   Cpu, 
@@ -21,6 +22,7 @@ interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { activeTab, setActiveTab, theme, setTheme, currentMetrics, isLive, specs } = useMetricsStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const formatUptime = (seconds: number) => {
     if (!seconds) return '0s';
@@ -99,6 +101,19 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
+
+          {/* Aesthetic Controls Button */}
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className={`p-2 rounded-xl border transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+              isDark 
+                ? 'bg-slate-800/50 border-slate-700/60 text-indigo-400 hover:bg-slate-800 hover:text-indigo-300 shadow-sm' 
+                : 'bg-white border-slate-200 text-indigo-600 hover:bg-slate-100 hover:text-indigo-700 shadow-sm'
+            }`}
+            title="Aesthetics Settings"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
         </div>
       </header>
 
@@ -151,6 +166,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           </div>
         </main>
       </div>
+      <SettingsDrawer isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 };

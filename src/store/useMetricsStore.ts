@@ -1,6 +1,22 @@
 import { create } from 'zustand';
 import { SystemAllMetrics, SystemSpecs } from '../types';
 
+export interface GlassmorphismSettings {
+  blurIntensity: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  baseTintColor: 'slate' | 'indigo' | 'emerald' | 'amber' | 'rose' | 'cyan' | 'zinc' | 'violet' | 'fuchsia';
+  tintOpacity: number;
+  borderStrength: 'none' | 'subtle' | 'medium' | 'strong';
+  glowEffect: boolean;
+}
+
+const defaultGlassSettings: GlassmorphismSettings = {
+  blurIntensity: 'md',
+  baseTintColor: 'slate',
+  tintOpacity: 0.25,
+  borderStrength: 'medium',
+  glowEffect: true,
+};
+
 interface MetricsState {
   specs: SystemSpecs | null;
   currentMetrics: SystemAllMetrics | null;
@@ -8,6 +24,7 @@ interface MetricsState {
   activeTab: 'dashboard' | 'cpu' | 'memory' | 'gpu' | 'disk' | 'network' | 'processes';
   theme: 'dark' | 'light';
   isLive: boolean;
+  glassSettings: GlassmorphismSettings;
   
   setTheme: (theme: 'dark' | 'light') => void;
   setActiveTab: (tab: MetricsState['activeTab']) => void;
@@ -15,7 +32,22 @@ interface MetricsState {
   addMetrics: (metrics: SystemAllMetrics) => void;
   fetchSpecs: () => Promise<void>;
   startListening: () => () => void; // returns cleanup function
+  updateGlassSettings: (settings: Partial<GlassmorphismSettings>) => void;
 }
+
+// Helper to load settings from localStorage safely
+const loadGlassSettings = (): GlassmorphismSettings => {
+  try {
+    const saved = localStorage.getItem('glass-settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return { ...defaultGlassSettings, ...parsed };
+    }
+  } catch (e) {
+    console.error('Failed to parse saved glassmorphism settings:', e);
+  }
+  return defaultGlassSettings;
+};
 
 export const useMetricsStore = create<MetricsState>((set, get) => ({
   specs: null,
@@ -24,6 +56,7 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
   activeTab: 'dashboard',
   theme: 'dark',
   isLive: false,
+  glassSettings: loadGlassSettings(),
 
   setTheme: (theme) => {
     set({ theme });
@@ -38,6 +71,18 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
   setActiveTab: (activeTab) => set({ activeTab }),
 
   setSpecs: (specs) => set({ specs }),
+
+  updateGlassSettings: (settings) => {
+    set((state) => {
+      const newSettings = { ...state.glassSettings, ...settings };
+      try {
+        localStorage.setItem('glass-settings', JSON.stringify(newSettings));
+      } catch (e) {
+        console.error('Failed to save glassmorphism settings:', e);
+      }
+      return { glassSettings: newSettings };
+    });
+  },
 
   addMetrics: (metrics) => set((state) => {
     const newHistory = [...state.history, metrics];

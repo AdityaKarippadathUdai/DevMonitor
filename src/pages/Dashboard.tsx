@@ -1,6 +1,7 @@
 import React from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
 import { MetricsChart } from '../components/graphs/MetricsChart';
+import { getGlassmorphicStyle } from '../utils/glassmorphism';
 import { Cpu, Laptop, HardDrive, Network, Layers, ChevronRight } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -136,8 +137,9 @@ const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDar
 };
 
 export const Dashboard: React.FC = () => {
-  const { currentMetrics, history, theme, setActiveTab } = useMetricsStore();
+  const { currentMetrics, history, theme, setActiveTab, glassSettings } = useMetricsStore();
   const isDark = theme === 'dark';
+  const glassStyle = getGlassmorphicStyle(glassSettings, isDark);
 
   if (!currentMetrics) {
     return (
@@ -211,11 +213,8 @@ export const Dashboard: React.FC = () => {
         {/* CPU SUMMARY CARD */}
         <div 
           onClick={() => setActiveTab('cpu')}
-          className={`group relative rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] cursor-pointer flex flex-col justify-between ${
-            isDark 
-              ? 'bg-slate-900/40 border-slate-800/80 hover:bg-slate-900/60 shadow-lg hover:shadow-cyan-500/5' 
-              : 'bg-white border-slate-200 hover:bg-slate-50/50 shadow-md hover:shadow-cyan-500/5'
-          }`}
+          className={`${glassStyle.className} group relative p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02]`}
+          style={glassStyle.style}
         >
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -272,11 +271,8 @@ export const Dashboard: React.FC = () => {
         {/* RAM SUMMARY CARD */}
         <div 
           onClick={() => setActiveTab('memory')}
-          className={`group relative rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] cursor-pointer flex flex-col justify-between ${
-            isDark 
-              ? 'bg-slate-900/40 border-slate-800/80 hover:bg-slate-900/60 shadow-lg hover:shadow-pink-500/5' 
-              : 'bg-white border-slate-200 hover:bg-slate-50/50 shadow-md hover:shadow-pink-500/5'
-          }`}
+          className={`${glassStyle.className} group relative p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02]`}
+          style={glassStyle.style}
         >
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -342,11 +338,8 @@ export const Dashboard: React.FC = () => {
         {/* GPU SUMMARY CARD */}
         <div 
           onClick={() => setActiveTab('gpu')}
-          className={`group relative rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] cursor-pointer flex flex-col justify-between ${
-            isDark 
-              ? 'bg-slate-900/40 border-slate-800/80 hover:bg-slate-900/60 shadow-lg hover:shadow-emerald-500/5' 
-              : 'bg-white border-slate-200 hover:bg-slate-50/50 shadow-md hover:shadow-emerald-500/5'
-          }`}
+          className={`${glassStyle.className} group relative p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02]`}
+          style={glassStyle.style}
         >
           {gpuDetected && primaryGpu && gpuStatus ? (
             <>
@@ -442,9 +435,8 @@ export const Dashboard: React.FC = () => {
         {/* Active Disks storage summary */}
         <div 
           onClick={() => setActiveTab('disk')}
-          className={`rounded-2xl border p-5 transition-all duration-300 cursor-pointer ${
-            isDark ? 'bg-slate-900/40 border-slate-800/80 hover:bg-slate-900/60' : 'bg-white border-slate-200 hover:bg-slate-50/50'
-          }`}
+          className={`${glassStyle.className} p-5 cursor-pointer`}
+          style={glassStyle.style}
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
@@ -490,9 +482,8 @@ export const Dashboard: React.FC = () => {
         {/* Network Interfaces summary */}
         <div 
           onClick={() => setActiveTab('network')}
-          className={`rounded-2xl border p-5 transition-all duration-300 cursor-pointer ${
-            isDark ? 'bg-slate-900/40 border-slate-800/80 hover:bg-slate-900/60' : 'bg-white border-slate-200 hover:bg-slate-50/50'
-          }`}
+          className={`${glassStyle.className} p-5 cursor-pointer`}
+          style={glassStyle.style}
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
