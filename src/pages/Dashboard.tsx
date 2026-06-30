@@ -2,6 +2,138 @@ import React from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
 import { MetricsChart } from '../components/graphs/MetricsChart';
 import { Cpu, Laptop, HardDrive, Network, Layers, ChevronRight } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from 'recharts';
+
+interface DashboardMemoryChartProps {
+  data: any[];
+  isDark: boolean;
+}
+
+const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDark }) => {
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const activeVal = payload.find((p: any) => p.name === 'Active')?.value || 0;
+      const cachedVal = payload.find((p: any) => p.name === 'Cache')?.value || 0;
+      const buffersVal = payload.find((p: any) => p.name === 'Buffers')?.value || 0;
+      const totalVal = (activeVal + cachedVal + buffersVal).toFixed(1);
+
+      return (
+        <div className={`p-2 rounded-xl border text-[10px] shadow-md space-y-1 font-mono ${
+          isDark
+            ? 'bg-slate-950/95 border-slate-800 text-slate-100'
+            : 'bg-white/95 border-slate-200 text-slate-900'
+        }`}>
+          <div className="flex justify-between gap-4">
+            <span className="flex items-center gap-1 text-pink-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+              Active:
+            </span>
+            <span className="font-bold">{activeVal.toFixed(1)}%</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="flex items-center gap-1 text-indigo-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              Cache:
+            </span>
+            <span className="font-bold">{cachedVal.toFixed(1)}%</span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="flex items-center gap-1 text-purple-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+              Buffers:
+            </span>
+            <span className="font-bold">{buffersVal.toFixed(1)}%</span>
+          </div>
+          <div className="flex justify-between gap-4 pt-1 border-t border-slate-800/10">
+            <span className="text-slate-400">Total:</span>
+            <span className="font-bold text-emerald-400">{totalVal}%</span>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div style={{ width: '100%', height: 100 }} className="relative">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart
+          data={data}
+          margin={{ top: 5, right: 5, left: -40, bottom: 0 }}
+        >
+          <defs>
+            <linearGradient id="dash-gradient-active" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#ec4899" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#ec4899" stopOpacity={0.0} />
+            </linearGradient>
+            <linearGradient id="dash-gradient-cached" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
+            </linearGradient>
+            <linearGradient id="dash-gradient-buffers" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#c084fc" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#c084fc" stopOpacity={0.0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid
+            strokeDasharray="3 3"
+            vertical={false}
+            stroke={isDark ? 'rgba(51, 65, 85, 0.15)' : 'rgba(226, 232, 240, 0.4)'}
+          />
+          <XAxis dataKey="timeLabel" hide />
+          <YAxis
+            domain={[0, 100]}
+            tick={false}
+            stroke="transparent"
+            width={0}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Area
+            type="monotone"
+            dataKey="active"
+            stackId="1"
+            stroke="#ec4899"
+            strokeWidth={1.5}
+            fillOpacity={1}
+            fill="url(#dash-gradient-active)"
+            name="Active"
+            isAnimationActive={false}
+          />
+          <Area
+            type="monotone"
+            dataKey="cached"
+            stackId="1"
+            stroke="#6366f1"
+            strokeWidth={1.5}
+            fillOpacity={1}
+            fill="url(#dash-gradient-cached)"
+            name="Cache"
+            isAnimationActive={false}
+          />
+          <Area
+            type="monotone"
+            dataKey="buffers"
+            stackId="1"
+            stroke="#c084fc"
+            strokeWidth={1.5}
+            fillOpacity={1}
+            fill="url(#dash-gradient-buffers)"
+            name="Buffers"
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
 
 export const Dashboard: React.FC = () => {
   const { currentMetrics, history, theme, setActiveTab } = useMetricsStore();
@@ -30,6 +162,9 @@ export const Dashboard: React.FC = () => {
       timeLabel,
       cpu: m.cpu?.usage || 0,
       mem: m.memory?.percentage || 0,
+      active: ((m.memory?.active || 0) / (m.memory?.total || 1)) * 100,
+      cached: ((m.memory?.cached || 0) / (m.memory?.total || 1)) * 100,
+      buffers: ((m.memory?.buffers || 0) / (m.memory?.total || 1)) * 100,
       gpu: primaryGpu ? primaryGpu.utilization || 0 : 0,
       vram: primaryGpu ? primaryGpu.vramPercentage || 0 : 0,
     };
@@ -38,6 +173,9 @@ export const Dashboard: React.FC = () => {
   // Safe RAM values
   const ramTotalGB = ((currentMetrics.memory?.total || 0) / (1024 ** 3)).toFixed(1);
   const ramUsedGB = ((currentMetrics.memory?.used || 0) / (1024 ** 3)).toFixed(1);
+  const ramActiveGB = ((currentMetrics.memory?.active || 0) / (1024 ** 3)).toFixed(1);
+  const ramCachedGB = ((currentMetrics.memory?.cached || 0) / (1024 ** 3)).toFixed(1);
+  const ramBuffersGB = ((currentMetrics.memory?.buffers || 0) / (1024 ** 3)).toFixed(1);
 
   // Status indicators based on load threshold
   const getStatus = (usage: number) => {
@@ -170,24 +308,33 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="mt-4 pt-4 border-t border-slate-800/10">
-            <p className="text-[10px] font-mono mb-2 text-slate-500">Live Memory History (60s)</p>
-            <MetricsChart 
+            <p className="text-[10px] font-mono mb-2 text-slate-500 text-center sm:text-left">Live Memory Composition (60s)</p>
+            <DashboardMemoryChart 
               data={chartData} 
-              dataKey="mem" 
-              color="#ec4899" 
-              unit="%" 
-              height={100} 
+              isDark={isDark} 
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mt-4 text-[11px] font-mono">
-            <div>
-              <span className="text-slate-500">Used:</span>{' '}
-              <span className="font-semibold">{ramUsedGB} GB</span>
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 mt-4 text-[10px] font-mono leading-tight">
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+              <span className="text-slate-500">Active:</span>{' '}
+              <span className="font-semibold">{ramActiveGB}G</span>
             </div>
-            <div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              <span className="text-slate-500">Cache:</span>{' '}
+              <span className="font-semibold">{ramCachedGB}G</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+              <span className="text-slate-500">Buffer:</span>{' '}
+              <span className="font-semibold">{ramBuffersGB}G</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
               <span className="text-slate-500">Total:</span>{' '}
-              <span className="font-semibold">{ramTotalGB} GB</span>
+              <span className="font-semibold">{ramTotalGB}G</span>
             </div>
           </div>
         </div>
