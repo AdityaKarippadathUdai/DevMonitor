@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getAllMetrics, getSystemSpecs } from './services/system.js';
@@ -8,6 +9,22 @@ const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
 let metricsInterval: NodeJS.Timeout | null = null;
+
+function resolvePreloadPath() {
+  const candidates = [
+    path.join(__dirname, 'preload.js'),
+    path.join(__dirname, 'preload.cjs'),
+  ];
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      console.log(`[Electron] Using preload script at ${candidate}`);
+      return candidate;
+    }
+  }
+
+  return path.join(__dirname, 'preload.js');
+}
 
 async function loadAppContent(window: BrowserWindow) {
   if (!app.isPackaged) {
@@ -34,6 +51,8 @@ async function loadAppContent(window: BrowserWindow) {
 }
 
 async function createWindow() {
+  const preloadPath = resolvePreloadPath();
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -43,14 +62,17 @@ async function createWindow() {
     frame: true,
     backgroundColor: '#0f172a',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.cjs'),
+      preload: preloadPath,
       contextIsolation: true,
       nodeIntegration: false,
     },
   });
 
+  console.log('[Electron] BrowserWindow created');
+
   await loadAppContent(mainWindow);
 
+  console.log('[Electron] Renderer loaded, starting metrics polling');
   startMetricsPolling();
 
   mainWindow.on('closed', () => {
@@ -61,17 +83,21 @@ async function createWindow() {
 
 function startMetricsPolling() {
   if (metricsInterval) clearInterval(metricsInterval);
-  
+
+  console.log('[Electron] Starting metrics polling every 500ms');
+
   metricsInterval = setInterval(async () => {
     if (mainWindow && !mainWindow.isDestroyed()) {
       try {
+        console.log('[Electron] Polling system metrics');
         const metrics = await getAllMetrics();
+        console.log('[Electron] Sending metrics-update event to renderer', metrics.timestamp);
         mainWindow.webContents.send('metrics-update', metrics);
       } catch (error) {
-        console.error('Error in metrics background poll:', error);
+        console.error('[Electron] Error in metrics background poll:', error);
       }
     }
-  }, 500); // 500ms intervals
+  }, 500);
 }
 
 function stopMetricsPolling() {
@@ -83,14 +109,21 @@ function stopMetricsPolling() {
 
 // IPC registration
 ipcMain.handle('get-system-metrics', async () => {
-  return await getAllMetrics();
+  console.log('[Electron] IPC handle get-system-metrics invoked');
+  const metrics = await getAllMetrics();
+  console.log('[Electron] IPC handle get-system-metrics resolved');
+  return metrics;
 });
 
 ipcMain.handle('get-system-specs', async () => {
-  return await getSystemSpecs();
+  console.log('[Electron] IPC handle get-system-specs invoked');
+  const specs = await getSystemSpecs();
+  console.log('[Electron] IPC handle get-system-specs resolved');
+  return specs;
 });
 
 app.whenReady().then(() => {
+  console.log('[Electron] started');
   createWindow();
 
   app.on('activate', () => {
