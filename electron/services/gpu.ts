@@ -8,18 +8,36 @@ export async function getGpuMetrics(): Promise<GpuMetrics[]> {
       return [];
     }
 
-    return graphics.controllers.map((gpu) => {
+    const gpus = graphics.controllers.map((gpu) => {
       // Normalize vendor name
       const vendorRaw = (gpu.vendor || '').toUpperCase();
+      const modelRaw = (gpu.model || '').toUpperCase();
       let vendor: GpuMetrics['vendor'] = 'Unknown';
 
-      if (vendorRaw.includes('NVIDIA')) {
+      if (
+        vendorRaw.includes('NVIDIA') ||
+        modelRaw.includes('NVIDIA') ||
+        modelRaw.includes('GEFORCE') ||
+        modelRaw.includes('RTX') ||
+        modelRaw.includes('GTX')
+      ) {
         vendor = 'NVIDIA';
-      } else if (vendorRaw.includes('AMD') || vendorRaw.includes('ATI')) {
+      } else if (
+        vendorRaw.includes('AMD') ||
+        vendorRaw.includes('ATI') ||
+        modelRaw.includes('AMD') ||
+        modelRaw.includes('RADEON')
+      ) {
         vendor = 'AMD';
-      } else if (vendorRaw.includes('INTEL')) {
+      } else if (
+        vendorRaw.includes('INTEL') ||
+        modelRaw.includes('INTEL') ||
+        modelRaw.includes('IRIS') ||
+        modelRaw.includes('XE GRAPHICS') ||
+        modelRaw.includes('UHD')
+      ) {
         vendor = 'Intel';
-      } else if (vendorRaw.includes('APPLE')) {
+      } else if (vendorRaw.includes('APPLE') || modelRaw.includes('APPLE')) {
         vendor = 'Apple';
       }
 
@@ -42,6 +60,36 @@ export async function getGpuMetrics(): Promise<GpuMetrics[]> {
         memoryClock: gpu.clockMemory !== undefined && gpu.clockMemory !== null && gpu.clockMemory !== -1 ? gpu.clockMemory : null,
       };
     });
+
+    // Sort GPUs so that high-performance discrete GPUs are listed first (index 0)
+    gpus.sort((a, b) => {
+      const getRank = (g: GpuMetrics) => {
+        let score = 0;
+        const model = (g.model || '').toUpperCase();
+        if (g.vendor === 'NVIDIA') {
+          score += 100;
+        } else if (g.vendor === 'AMD') {
+          if (model.includes('RX') || model.includes('PRO') || model.includes('XT') || model.includes('NAVY')) {
+            score += 80; // Discrete AMD
+          } else {
+            score += 30; // Integrated AMD Radeon
+          }
+        } else if (g.vendor === 'Intel') {
+          if (model.includes('ARC')) {
+            score += 70; // Discrete Intel Arc
+          } else {
+            score += 20; // Integrated Intel UHD/Iris Xe
+          }
+        } else if (g.vendor === 'Apple') {
+          score += 50;
+        }
+        return score;
+      };
+
+      return getRank(b) - getRank(a);
+    });
+
+    return gpus;
   } catch (error) {
     console.error('Error fetching GPU metrics:', error);
     return [];
