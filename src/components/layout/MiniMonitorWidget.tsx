@@ -68,6 +68,12 @@ export const MiniMonitorWidget: React.FC = () => {
   const ramUsedGB = (ramUsedBytes / (1024 ** 3)).toFixed(1);
   const ramTotalGB = (ramTotalBytes / (1024 ** 3)).toFixed(1);
 
+  // Refs to hold the latest dragging event handlers to avoid stale closures
+  const handleMouseMoveRef = useRef<(e: MouseEvent) => void>(null);
+  const handleMouseUpRef = useRef<() => void>(null);
+  const handleTouchMoveRef = useRef<(e: TouchEvent) => void>(null);
+  const handleTouchEndRef = useRef<() => void>(null);
+
   // Mouse drag handlers
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     // Only drag with left click
@@ -81,37 +87,12 @@ export const MiniMonitorWidget: React.FC = () => {
     dragRef.current = {
       startX: e.clientX,
       startY: e.clientY,
-      posX: position.x,
-      posY: position.y,
+      posX: position.x !== -1 ? position.x : window.innerWidth - (isCollapsed ? 190 : 300) - 24,
+      posY: position.y !== -1 ? position.y : window.innerHeight - (isCollapsed ? 44 : 230) - 24,
     };
     e.preventDefault();
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return;
-    const dx = e.clientX - dragRef.current.startX;
-    const dy = e.clientY - dragRef.current.startY;
-    
-    const nextX = dragRef.current.posX + dx;
-    const nextY = dragRef.current.posY + dy;
-
-    // Boundary constraints
-    const minX = 10;
-    const minY = 10;
-    const maxX = window.innerWidth - (isCollapsed ? 180 : 320) - 10;
-    const maxY = window.innerHeight - (isCollapsed ? 45 : 240) - 10;
-
-    setPosition({
-      x: Math.min(Math.max(minX, nextX), maxX),
-      y: Math.min(Math.max(minY, nextY), maxY),
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // Touch drag handlers for mobile / tablet devices
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     const target = e.target as HTMLElement;
     if (target.closest('button')) return;
@@ -121,53 +102,81 @@ export const MiniMonitorWidget: React.FC = () => {
     dragRef.current = {
       startX: touch.clientX,
       startY: touch.clientY,
-      posX: position.x,
-      posY: position.y,
+      posX: position.x !== -1 ? position.x : window.innerWidth - (isCollapsed ? 190 : 300) - 24,
+      posY: position.y !== -1 ? position.y : window.innerHeight - (isCollapsed ? 44 : 230) - 24,
     };
   };
 
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!isDragging) return;
-    const touch = e.touches[0];
-    const dx = touch.clientX - dragRef.current.startX;
-    const dy = touch.clientY - dragRef.current.startY;
-
-    const nextX = dragRef.current.posX + dx;
-    const nextY = dragRef.current.posY + dy;
-
-    const minX = 10;
-    const minY = 10;
-    const maxX = window.innerWidth - (isCollapsed ? 180 : 320) - 10;
-    const maxY = window.innerHeight - (isCollapsed ? 45 : 240) - 10;
-
-    setPosition({
-      x: Math.min(Math.max(minX, nextX), maxX),
-      y: Math.min(Math.max(minY, nextY), maxY),
-    });
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-  };
-
-  // Attach global listeners for dragging (handles smooth motion even if mouse leaves bounds)
+  // Keep event handler refs up-to-date with current state values
   useEffect(() => {
+    handleMouseMoveRef.current = (e: MouseEvent) => {
+      if (!isDragging) return;
+      const dx = e.clientX - dragRef.current.startX;
+      const dy = e.clientY - dragRef.current.startY;
+      
+      const nextX = dragRef.current.posX + dx;
+      const nextY = dragRef.current.posY + dy;
+
+      // Boundary constraints
+      const minX = 10;
+      const minY = 10;
+      const maxX = window.innerWidth - (isCollapsed ? 190 : 300) - 10;
+      const maxY = window.innerHeight - (isCollapsed ? 44 : 230) - 10;
+
+      setPosition({
+        x: Math.min(Math.max(minX, nextX), maxX),
+        y: Math.min(Math.max(minY, nextY), maxY),
+      });
+    };
+
+    handleMouseUpRef.current = () => {
+      setIsDragging(false);
+    };
+
+    handleTouchMoveRef.current = (e: TouchEvent) => {
+      if (!isDragging) return;
+      const touch = e.touches[0];
+      const dx = touch.clientX - dragRef.current.startX;
+      const dy = touch.clientY - dragRef.current.startY;
+
+      const nextX = dragRef.current.posX + dx;
+      const nextY = dragRef.current.posY + dy;
+
+      const minX = 10;
+      const minY = 10;
+      const maxX = window.innerWidth - (isCollapsed ? 190 : 300) - 10;
+      const maxY = window.innerHeight - (isCollapsed ? 44 : 230) - 10;
+
+      setPosition({
+        x: Math.min(Math.max(minX, nextX), maxX),
+        y: Math.min(Math.max(minY, nextY), maxY),
+      });
+    };
+
+    handleTouchEndRef.current = () => {
+      setIsDragging(false);
+    };
+  });
+
+  // Attach global listeners for dragging using stable proxy functions
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => handleMouseMoveRef.current?.(e);
+    const onMouseUp = () => handleMouseUpRef.current?.();
+    const onTouchMove = (e: TouchEvent) => handleTouchMoveRef.current?.(e);
+    const onTouchEnd = () => handleTouchEndRef.current?.();
+
     if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('touchmove', handleTouchMove, { passive: false });
-      window.addEventListener('touchend', handleTouchEnd);
-    } else {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+      window.addEventListener('touchmove', onTouchMove, { passive: false });
+      window.addEventListener('touchend', onTouchEnd);
     }
+
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
     };
   }, [isDragging]);
 
