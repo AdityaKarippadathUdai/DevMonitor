@@ -1,5 +1,5 @@
 import si from 'systeminformation';
-import { GpuMetrics } from '../../src/types';
+import type { GpuMetrics } from '../../shared/types.js';
 
 export async function getGpuMetrics(): Promise<GpuMetrics[]> {
   try {
