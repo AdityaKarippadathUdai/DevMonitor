@@ -1,10 +1,10 @@
 import si from 'systeminformation';
-import { SystemSpecs, SystemAllMetrics } from '../../src/types';
-import { getCpuMetrics, getCpuStaticInfo } from './cpu';
-import { getMemoryMetrics } from './memory';
-import { getGpuMetrics } from './gpu';
-import { getDiskMetrics } from './disk';
-import { getNetworkMetrics } from './network';
+import type { SystemSpecs, SystemAllMetrics } from '../../shared/types.js';
+import { getCpuMetrics, getCpuStaticInfo } from './cpu.js';
+import { getMemoryMetrics } from './memory.js';
+import { getGpuMetrics } from './gpu.js';
+import { getDiskMetrics } from './disk.js';
+import { getNetworkMetrics } from './network.js';
 
 let cachedSpecs: SystemSpecs | null = null;
 
