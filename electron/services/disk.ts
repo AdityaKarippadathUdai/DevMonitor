@@ -1,5 +1,5 @@
 import si from 'systeminformation';
-import { DiskInfo } from '../../src/types';
+import type { DiskInfo } from '../../shared/types.js';
 
 export async function getDiskMetrics(): Promise<DiskInfo[]> {
   try {
