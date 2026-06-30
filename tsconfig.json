@@ -15,17 +15,20 @@
     "moduleDetection": "force",
     "allowJs": true,
     "jsx": "react-jsx",
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./*"
       ]
     },
     "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "strict": true,
     "noEmit": true
   },
   "include": [
     "src/**/*",
-    "server.ts"
+    "shared/**/*"
   ],
   "exclude": [
     "electron",
