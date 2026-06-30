@@ -73,8 +73,17 @@ async function createWindow() {
 
   mainWindow.webContents.on('did-finish-load', async () => {
     try {
-      const apiKeys = await mainWindow?.webContents.executeJavaScript('window.electronAPI ? Object.keys(window.electronAPI) : []');
-      console.log('[Electron] Renderer bridge keys:', apiKeys);
+      const bridgeInfo = await mainWindow?.webContents.executeJavaScript(`(() => {
+        try {
+          return {
+            hasElectronAPI: !!window.electronAPI,
+            keys: window.electronAPI ? Object.keys(window.electronAPI) : [],
+          };
+        } catch (error) {
+          return { error: error.message };
+        }
+      })()`);
+      console.log('[Electron] Renderer bridge inspection:', bridgeInfo);
     } catch (error) {
       console.error('[Electron] Failed to inspect renderer bridge:', error);
     }
