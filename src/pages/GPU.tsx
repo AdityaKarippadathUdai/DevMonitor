@@ -1,11 +1,13 @@
 import React from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
 import { MetricsChart } from '../components/graphs/MetricsChart';
+import { getChartColorsByMode } from '../utils/colorModes';
 import { Cpu, HelpCircle, Activity, Wind, Zap, Gauge } from 'lucide-react';
 
 export const GPU: React.FC = () => {
-  const { currentMetrics, history, theme } = useMetricsStore();
+  const { currentMetrics, history, theme, colorMode } = useMetricsStore();
   const isDark = theme === 'dark';
+  const colors = getChartColorsByMode(colorMode);
 
   if (!currentMetrics) {
     return (
@@ -89,12 +91,12 @@ export const GPU: React.FC = () => {
                   <div className={`rounded-xl border p-4 ${isDark ? 'bg-slate-950/40 border-slate-800/60' : 'bg-slate-50 border-slate-200'}`}>
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-xs font-semibold text-slate-500 font-mono">Core Load Timeline</span>
-                      <span className="text-xs font-mono font-bold text-emerald-400">{(gpu.utilization || 0).toFixed(1)}%</span>
+                      <span className="text-xs font-mono font-bold" style={{ color: colors.gpu }}>{(gpu.utilization || 0).toFixed(1)}%</span>
                     </div>
                     <MetricsChart 
                       data={chartData} 
                       dataKey="utilization" 
-                      color="#10b981" 
+                      color={colors.gpu} 
                       unit="%" 
                       height={160} 
                     />
@@ -104,12 +106,12 @@ export const GPU: React.FC = () => {
                   <div className={`rounded-xl border p-4 ${isDark ? 'bg-slate-950/40 border-slate-800/60' : 'bg-slate-50 border-slate-200'}`}>
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-xs font-semibold text-slate-500 font-mono">VRAM Framebuffer Allocation</span>
-                      <span className="text-xs font-mono font-bold text-indigo-400">{(gpu.vramPercentage || 0).toFixed(1)}%</span>
+                      <span className="text-xs font-mono font-bold" style={{ color: colors.mem }}>{(gpu.vramPercentage || 0).toFixed(1)}%</span>
                     </div>
                     <MetricsChart 
                       data={chartData} 
                       dataKey="vram" 
-                      color="#6366f1" 
+                      color={colors.mem} 
                       unit="%" 
                       height={160} 
                     />

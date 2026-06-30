@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { SystemAllMetrics, SystemSpecs } from '../types';
+import { COLOR_MODES } from '../utils/colorModes';
 
 export interface GlassmorphismSettings {
   blurIntensity: 'none' | 'sm' | 'md' | 'lg' | 'xl';
@@ -26,6 +27,7 @@ interface MetricsState {
   isLive: boolean;
   glassSettings: GlassmorphismSettings;
   miniModeActive: boolean;
+  colorMode: string;
   
   setTheme: (theme: 'dark' | 'light') => void;
   setActiveTab: (tab: MetricsState['activeTab']) => void;
@@ -35,7 +37,17 @@ interface MetricsState {
   startListening: () => () => void; // returns cleanup function
   updateGlassSettings: (settings: Partial<GlassmorphismSettings>) => void;
   setMiniModeActive: (active: boolean) => void;
+  setColorMode: (modeId: string) => void;
 }
+
+const loadColorMode = (): string => {
+  try {
+    const saved = localStorage.getItem('color-mode');
+    return saved || 'standard';
+  } catch (e) {
+    return 'standard';
+  }
+};
 
 // Helper to load settings from localStorage safely
 const loadGlassSettings = (): GlassmorphismSettings => {
@@ -60,6 +72,7 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
   isLive: false,
   glassSettings: loadGlassSettings(),
   miniModeActive: false,
+  colorMode: loadColorMode(),
 
   setTheme: (theme) => {
     set({ theme });
@@ -76,6 +89,28 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
   setSpecs: (specs) => set({ specs }),
 
   setMiniModeActive: (miniModeActive) => set({ miniModeActive }),
+
+  setColorMode: (colorMode) => {
+    const preset = COLOR_MODES.find(m => m.id === colorMode);
+    if (preset) {
+      set({ colorMode });
+      try {
+        localStorage.setItem('color-mode', colorMode);
+      } catch (e) {
+        console.error('Failed to save color-mode to local storage', e);
+      }
+      
+      // Update glass settings
+      if (preset.glassSettings) {
+        get().updateGlassSettings(preset.glassSettings);
+      }
+      
+      // Update theme if defined
+      if (preset.theme) {
+        get().setTheme(preset.theme);
+      }
+    }
+  },
 
   updateGlassSettings: (settings) => {
     set((state) => {

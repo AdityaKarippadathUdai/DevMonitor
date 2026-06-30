@@ -1,5 +1,6 @@
 import React from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
+import { getChartColorsByMode, ChartColors } from '../utils/colorModes';
 import { Layers, Database, ShieldAlert, Cpu } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -15,9 +16,10 @@ interface MemoryChartProps {
   data: any[];
   isDark: boolean;
   totalGB: number;
+  colors: ChartColors;
 }
 
-const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB }) => {
+const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB, colors }) => {
   const maxDomain = Math.ceil(totalGB) || 16;
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -37,22 +39,22 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB }) => {
             Memory Allocation Composition
           </div>
           <div className="flex justify-between gap-8">
-            <span className="flex items-center gap-1.5 text-pink-400">
-              <span className="w-2 h-2 rounded-full bg-pink-500"></span>
+            <span className="flex items-center gap-1.5" style={{ color: colors.mem }}>
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.mem }}></span>
               Active Used:
             </span>
             <span className="font-bold">{used.toFixed(2)} GB</span>
           </div>
           <div className="flex justify-between gap-8">
-            <span className="flex items-center gap-1.5 text-indigo-400">
-              <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+            <span className="flex items-center gap-1.5" style={{ color: colors.cache }}>
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.cache }}></span>
               Caches:
             </span>
             <span className="font-bold">{cached.toFixed(2)} GB</span>
           </div>
           <div className="flex justify-between gap-8 pb-1.5 border-b border-slate-800/10">
-            <span className="flex items-center gap-1.5 text-purple-400">
-              <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+            <span className="flex items-center gap-1.5" style={{ color: colors.buffers }}>
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.buffers }}></span>
               Buffers:
             </span>
             <span className="font-bold">{buffers.toFixed(2)} GB</span>
@@ -76,16 +78,16 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB }) => {
         >
           <defs>
             <linearGradient id="gradient-used" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ec4899" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="#ec4899" stopOpacity={0.0} />
+              <stop offset="5%" stopColor={colors.mem} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={colors.mem} stopOpacity={0.0} />
             </linearGradient>
             <linearGradient id="gradient-cached" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
+              <stop offset="5%" stopColor={colors.cache} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={colors.cache} stopOpacity={0.0} />
             </linearGradient>
             <linearGradient id="gradient-buffers" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#c084fc" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="#c084fc" stopOpacity={0.0} />
+              <stop offset="5%" stopColor={colors.buffers} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={colors.buffers} stopOpacity={0.0} />
             </linearGradient>
           </defs>
           <CartesianGrid
@@ -109,7 +111,7 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB }) => {
             type="monotone"
             dataKey="active"
             stackId="1"
-            stroke="#ec4899"
+            stroke={colors.mem}
             strokeWidth={1.5}
             fillOpacity={1}
             fill="url(#gradient-used)"
@@ -120,7 +122,7 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB }) => {
             type="monotone"
             dataKey="cached"
             stackId="1"
-            stroke="#6366f1"
+            stroke={colors.cache}
             strokeWidth={1.5}
             fillOpacity={1}
             fill="url(#gradient-cached)"
@@ -131,7 +133,7 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB }) => {
             type="monotone"
             dataKey="buffers"
             stackId="1"
-            stroke="#c084fc"
+            stroke={colors.buffers}
             strokeWidth={1.5}
             fillOpacity={1}
             fill="url(#gradient-buffers)"
@@ -145,8 +147,9 @@ const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB }) => {
 };
 
 export const Memory: React.FC = () => {
-  const { currentMetrics, history, theme } = useMetricsStore();
+  const { currentMetrics, history, theme, colorMode } = useMetricsStore();
   const isDark = theme === 'dark';
+  const colors = getChartColorsByMode(colorMode);
 
   if (!currentMetrics) {
     return (
@@ -209,20 +212,23 @@ export const Memory: React.FC = () => {
               <h3 className="font-semibold text-sm">Memory Allocation (60 seconds)</h3>
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[10px] font-mono text-slate-500">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-pink-500"></span>
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.mem }}></span>
                   Active Process ({activeGB} GB)
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.cache }}></span>
                   Cache Blocks ({cachedGB} GB)
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.buffers }}></span>
                   Kern Buffers ({buffersGB} GB)
                 </span>
               </div>
             </div>
-            <span className="self-start sm:self-center text-xs font-mono text-pink-400 font-bold bg-pink-950/20 px-2 py-0.5 rounded-full">
+            <span 
+              className="self-start sm:self-center text-xs font-mono font-bold px-2 py-0.5 rounded-full border"
+              style={{ color: colors.mem, backgroundColor: `${colors.mem}10`, borderColor: `${colors.mem}30` }}
+            >
               {(mem?.percentage || 0).toFixed(1)}% Used
             </span>
           </div>
@@ -231,6 +237,7 @@ export const Memory: React.FC = () => {
             data={chartData} 
             isDark={isDark} 
             totalGB={(mem?.total || 0) / (1024 ** 3)} 
+            colors={colors}
           />
         </div>
 
@@ -243,15 +250,15 @@ export const Memory: React.FC = () => {
             <div className="space-y-3 font-mono text-xs">
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Active (Processes):</span>
-                <span className="font-bold text-pink-400">{activeGB} GB</span>
+                <span className="font-bold" style={{ color: colors.mem }}>{activeGB} GB</span>
               </div>
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Cache Blocks:</span>
-                <span className="font-semibold text-indigo-400">{cachedGB} GB</span>
+                <span className="font-semibold" style={{ color: colors.cache }}>{cachedGB} GB</span>
               </div>
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Buffers:</span>
-                <span className="font-semibold text-purple-400">{buffersGB} GB</span>
+                <span className="font-semibold" style={{ color: colors.buffers }}>{buffersGB} GB</span>
               </div>
               <div className="flex justify-between border-b border-slate-800/10 pb-1.5">
                 <span className="text-slate-500">Available (Freeable):</span>
@@ -271,7 +278,7 @@ export const Memory: React.FC = () => {
           <div className={`mt-4 p-3 rounded-xl border flex items-center gap-3 ${
             isDark ? 'bg-slate-950/40 border-slate-800/60' : 'bg-slate-50 border-slate-200'
           }`}>
-            <Database className="w-5 h-5 text-pink-400 shrink-0" />
+            <Database className="w-5 h-5 shrink-0" style={{ color: colors.mem }} />
             <div className="text-[10px] leading-relaxed">
               <span className="font-semibold text-slate-400">Paging Engine: </span>
               {(mem?.percentage || 0) > 85 ? (
@@ -297,22 +304,31 @@ export const Memory: React.FC = () => {
             {/* Horizontal Stack Bar */}
             <div className="h-6 rounded-full overflow-hidden flex bg-slate-800 font-mono text-[9px] text-white">
               <div 
-                className="bg-pink-500 flex items-center justify-center font-bold" 
-                style={{ width: `${(mem?.total || 0) > 0 ? ((mem?.active || 0) / (mem?.total || 1)) * 100 : 0}%` }}
+                className="flex items-center justify-center font-bold" 
+                style={{ 
+                  width: `${(mem?.total || 0) > 0 ? ((mem?.active || 0) / (mem?.total || 1)) * 100 : 0}%`,
+                  backgroundColor: colors.mem
+                }}
                 title={`Active Processes RAM: ${activeGB} GB`}
               >
                 {(mem?.total || 0) > 0 && ((mem?.active || 0) / (mem?.total || 1)) * 100 > 12 && 'ACTIVE'}
               </div>
               <div 
-                className="bg-indigo-500 flex items-center justify-center font-bold" 
-                style={{ width: `${(mem?.total || 0) > 0 ? ((mem?.cached || 0) / (mem?.total || 1)) * 100 : 0}%` }}
+                className="flex items-center justify-center font-bold" 
+                style={{ 
+                  width: `${(mem?.total || 0) > 0 ? ((mem?.cached || 0) / (mem?.total || 1)) * 100 : 0}%`,
+                  backgroundColor: colors.cache
+                }}
                 title={`Cached Memory: ${cachedGB} GB`}
               >
                 {(mem?.total || 0) > 0 && ((mem?.cached || 0) / (mem?.total || 1)) * 100 > 12 && 'CACHE'}
               </div>
               <div 
-                className="bg-purple-400 flex items-center justify-center font-bold" 
-                style={{ width: `${(mem?.total || 0) > 0 ? ((mem?.buffers || 0) / (mem?.total || 1)) * 100 : 0}%` }}
+                className="flex items-center justify-center font-bold" 
+                style={{ 
+                  width: `${(mem?.total || 0) > 0 ? ((mem?.buffers || 0) / (mem?.total || 1)) * 100 : 0}%`,
+                  backgroundColor: colors.buffers
+                }}
                 title={`Buffers: ${buffersGB} GB`}
               >
                 {(mem?.total || 0) > 0 && ((mem?.buffers || 0) / (mem?.total || 1)) * 100 > 12 && 'BUFFERS'}

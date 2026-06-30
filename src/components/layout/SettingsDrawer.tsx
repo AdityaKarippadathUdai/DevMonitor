@@ -1,49 +1,12 @@
 import React from 'react';
 import { useMetricsStore, GlassmorphismSettings } from '../../store/useMetricsStore';
+import { COLOR_MODES } from '../../utils/colorModes';
 import { X, Sliders, Sparkles, Layers, Palette, Check, RotateCcw } from 'lucide-react';
 
 interface SettingsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const PRESETS = [
-  {
-    name: 'Default Glass',
-    desc: 'Balanced opacity and light glow',
-    settings: { blurIntensity: 'md', baseTintColor: 'slate', tintOpacity: 0.25, borderStrength: 'medium', glowEffect: true } as GlassmorphismSettings
-  },
-  {
-    name: 'Cyber Neon',
-    desc: 'High-contrast fuchsia tint',
-    settings: { blurIntensity: 'lg', baseTintColor: 'fuchsia', tintOpacity: 0.35, borderStrength: 'strong', glowEffect: true } as GlassmorphismSettings
-  },
-  {
-    name: 'Emerald Forest',
-    desc: 'Deep translucent green forest hue',
-    settings: { blurIntensity: 'xl', baseTintColor: 'emerald', tintOpacity: 0.20, borderStrength: 'medium', glowEffect: true } as GlassmorphismSettings
-  },
-  {
-    name: 'Deep Ocean',
-    desc: 'Immersive indigo blue tone',
-    settings: { blurIntensity: 'md', baseTintColor: 'indigo', tintOpacity: 0.30, borderStrength: 'medium', glowEffect: true } as GlassmorphismSettings
-  },
-  {
-    name: 'Sunset Warmth',
-    desc: 'Warm rose glow overlay',
-    settings: { blurIntensity: 'md', baseTintColor: 'rose', tintOpacity: 0.20, borderStrength: 'medium', glowEffect: true } as GlassmorphismSettings
-  },
-  {
-    name: 'Frosted Ice',
-    desc: 'High blur, light crystal teal overlay',
-    settings: { blurIntensity: 'xl', baseTintColor: 'cyan', tintOpacity: 0.15, borderStrength: 'subtle', glowEffect: true } as GlassmorphismSettings
-  },
-  {
-    name: 'Minimal Matte',
-    desc: 'Sharp, zero blur, lightweight dark-matte',
-    settings: { blurIntensity: 'none', baseTintColor: 'zinc', tintOpacity: 0.12, borderStrength: 'subtle', glowEffect: false } as GlassmorphismSettings
-  }
-];
 
 const TINTS = [
   { id: 'slate', name: 'Slate', color: 'bg-slate-500' },
@@ -58,19 +21,13 @@ const TINTS = [
 ];
 
 export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose }) => {
-  const { theme, glassSettings, updateGlassSettings } = useMetricsStore();
+  const { theme, glassSettings, updateGlassSettings, colorMode, setColorMode } = useMetricsStore();
   const isDark = theme === 'dark';
 
   if (!isOpen) return null;
 
   const handleReset = () => {
-    updateGlassSettings({
-      blurIntensity: 'md',
-      baseTintColor: 'slate',
-      tintOpacity: 0.25,
-      borderStrength: 'medium',
-      glowEffect: true,
-    });
+    setColorMode('standard');
   };
 
   return (
@@ -118,18 +75,13 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
               <span>Theme Preset Bundles</span>
             </div>
             <div className="grid grid-cols-1 gap-2">
-              {PRESETS.map((preset) => {
-                const isActive = 
-                  glassSettings.blurIntensity === preset.settings.blurIntensity &&
-                  glassSettings.baseTintColor === preset.settings.baseTintColor &&
-                  Math.abs(glassSettings.tintOpacity - preset.settings.tintOpacity) < 0.02 &&
-                  glassSettings.borderStrength === preset.settings.borderStrength &&
-                  glassSettings.glowEffect === preset.settings.glowEffect;
+              {COLOR_MODES.map((preset) => {
+                const isActive = colorMode === preset.id;
 
                 return (
                   <button
-                    key={preset.name}
-                    onClick={() => updateGlassSettings(preset.settings)}
+                    key={preset.id}
+                    onClick={() => setColorMode(preset.id)}
                     className={`p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer ${
                       isActive
                         ? isDark 
@@ -145,7 +97,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({ isOpen, onClose 
                       {isActive && <Check className="w-3.5 h-3.5 text-indigo-500" />}
                     </div>
                     <p className={`text-[10px] mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {preset.desc}
+                      {preset.description}
                     </p>
                   </button>
                 );

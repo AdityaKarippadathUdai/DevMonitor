@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
 import { MetricsChart } from '../components/graphs/MetricsChart';
+import { getChartColorsByMode } from '../utils/colorModes';
 import { Cpu, Terminal, Search, Flame, Server } from 'lucide-react';
 
 export const CPU: React.FC = () => {
-  const { currentMetrics, history, theme } = useMetricsStore();
+  const { currentMetrics, history, theme, colorMode } = useMetricsStore();
   const [filterQuery, setFilterQuery] = useState('');
   const isDark = theme === 'dark';
+  const colors = getChartColorsByMode(colorMode);
 
   if (!currentMetrics) {
     return (
@@ -59,7 +61,10 @@ export const CPU: React.FC = () => {
         }`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-sm">Utilization Timeline (60 seconds)</h3>
-            <span className="text-xs font-mono text-cyan-400 font-bold bg-cyan-950/20 px-2 py-0.5 rounded-full">
+            <span 
+              className="text-xs font-mono font-bold px-2 py-0.5 rounded-full border"
+              style={{ color: colors.cpu, backgroundColor: `${colors.cpu}10`, borderColor: `${colors.cpu}30` }}
+            >
               {(cpu?.usage || 0).toFixed(1)}% Load
             </span>
           </div>
@@ -67,7 +72,7 @@ export const CPU: React.FC = () => {
           <MetricsChart 
             data={chartData} 
             dataKey="cpu" 
-            color="#06b6d4" 
+            color={colors.cpu} 
             unit="%" 
             height={220} 
           />

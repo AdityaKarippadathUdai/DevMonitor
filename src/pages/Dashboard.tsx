@@ -2,6 +2,7 @@ import React from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
 import { MetricsChart } from '../components/graphs/MetricsChart';
 import { getGlassmorphicStyle } from '../utils/glassmorphism';
+import { getChartColorsByMode, ChartColors } from '../utils/colorModes';
 import { Cpu, Laptop, HardDrive, Network, Layers, ChevronRight } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -16,9 +17,10 @@ import {
 interface DashboardMemoryChartProps {
   data: any[];
   isDark: boolean;
+  colors: ChartColors;
 }
 
-const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDark }) => {
+const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDark, colors }) => {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const activeVal = payload.find((p: any) => p.name === 'Active')?.value || 0;
@@ -33,22 +35,22 @@ const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDar
             : 'bg-white/95 border-slate-200 text-slate-900'
         }`}>
           <div className="flex justify-between gap-4">
-            <span className="flex items-center gap-1 text-pink-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+            <span className="flex items-center gap-1" style={{ color: colors.mem }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.mem }}></span>
               Active:
             </span>
             <span className="font-bold">{activeVal.toFixed(1)}%</span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="flex items-center gap-1 text-indigo-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+            <span className="flex items-center gap-1" style={{ color: colors.cache }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.cache }}></span>
               Cache:
             </span>
             <span className="font-bold">{cachedVal.toFixed(1)}%</span>
           </div>
           <div className="flex justify-between gap-4">
-            <span className="flex items-center gap-1 text-purple-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+            <span className="flex items-center gap-1" style={{ color: colors.buffers }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.buffers }}></span>
               Buffers:
             </span>
             <span className="font-bold">{buffersVal.toFixed(1)}%</span>
@@ -72,16 +74,16 @@ const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDar
         >
           <defs>
             <linearGradient id="dash-gradient-active" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ec4899" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#ec4899" stopOpacity={0.0} />
+              <stop offset="5%" stopColor={colors.mem} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={colors.mem} stopOpacity={0.0} />
             </linearGradient>
             <linearGradient id="dash-gradient-cached" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
+              <stop offset="5%" stopColor={colors.cache} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={colors.cache} stopOpacity={0.0} />
             </linearGradient>
             <linearGradient id="dash-gradient-buffers" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#c084fc" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#c084fc" stopOpacity={0.0} />
+              <stop offset="5%" stopColor={colors.buffers} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={colors.buffers} stopOpacity={0.0} />
             </linearGradient>
           </defs>
           <CartesianGrid
@@ -101,7 +103,7 @@ const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDar
             type="monotone"
             dataKey="active"
             stackId="1"
-            stroke="#ec4899"
+            stroke={colors.mem}
             strokeWidth={1.5}
             fillOpacity={1}
             fill="url(#dash-gradient-active)"
@@ -112,7 +114,7 @@ const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDar
             type="monotone"
             dataKey="cached"
             stackId="1"
-            stroke="#6366f1"
+            stroke={colors.cache}
             strokeWidth={1.5}
             fillOpacity={1}
             fill="url(#dash-gradient-cached)"
@@ -123,7 +125,7 @@ const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDar
             type="monotone"
             dataKey="buffers"
             stackId="1"
-            stroke="#c084fc"
+            stroke={colors.buffers}
             strokeWidth={1.5}
             fillOpacity={1}
             fill="url(#dash-gradient-buffers)"
@@ -144,10 +146,12 @@ export const Dashboard: React.FC = () => {
     setActiveTab, 
     glassSettings,
     miniModeActive,
-    setMiniModeActive
+    setMiniModeActive,
+    colorMode,
   } = useMetricsStore();
   const isDark = theme === 'dark';
   const glassStyle = getGlassmorphicStyle(glassSettings, isDark);
+  const colors = getChartColorsByMode(colorMode);
 
   if (!currentMetrics) {
     return (
@@ -272,7 +276,7 @@ export const Dashboard: React.FC = () => {
             <MetricsChart 
               data={chartData} 
               dataKey="cpu" 
-              color="#06b6d4" 
+              color={colors.cpu} 
               unit="%" 
               height={100} 
             />
@@ -300,7 +304,7 @@ export const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400">
-                  <Layers className="w-5 h-5" />
+                  <Layers className="w-5 h-5 animate-pulse" style={{ color: colors.mem }} />
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">Memory</h3>
@@ -330,22 +334,23 @@ export const Dashboard: React.FC = () => {
             <DashboardMemoryChart 
               data={chartData} 
               isDark={isDark} 
+              colors={colors}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 mt-4 text-[10px] font-mono leading-tight">
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-pink-500"></span>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.mem }}></span>
               <span className="text-slate-500">Active:</span>{' '}
               <span className="font-semibold">{ramActiveGB}G</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.cache }}></span>
               <span className="text-slate-500">Cache:</span>{' '}
               <span className="font-semibold">{ramCachedGB}G</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: colors.buffers }}></span>
               <span className="text-slate-500">Buffer:</span>{' '}
               <span className="font-semibold">{ramBuffersGB}G</span>
             </div>
@@ -399,7 +404,7 @@ export const Dashboard: React.FC = () => {
                 <MetricsChart 
                   data={chartData} 
                   dataKey="gpu" 
-                  color="#10b981" 
+                  color={colors.gpu} 
                   unit="%" 
                   height={100} 
                 />

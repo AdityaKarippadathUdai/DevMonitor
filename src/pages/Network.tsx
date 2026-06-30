@@ -1,11 +1,13 @@
 import React from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
 import { MetricsChart } from '../components/graphs/MetricsChart';
+import { getChartColorsByMode } from '../utils/colorModes';
 import { Network as NetIcon, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 
 export const Network: React.FC = () => {
-  const { currentMetrics, history, theme } = useMetricsStore();
+  const { currentMetrics, history, theme, colorMode } = useMetricsStore();
   const isDark = theme === 'dark';
+  const colors = getChartColorsByMode(colorMode);
 
   if (!currentMetrics) {
     return (
@@ -58,17 +60,17 @@ export const Network: React.FC = () => {
         }`}>
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-semibold text-slate-500 font-mono flex items-center gap-2">
-              <ArrowDownCircle className="w-4 h-4 text-emerald-400" />
+              <ArrowDownCircle className="w-4 h-4" style={{ color: colors.network }} />
               <span>Instantaneous Download (Rx)</span>
             </span>
-            <span className="text-xs font-mono font-bold text-emerald-400">
+            <span className="text-xs font-mono font-bold" style={{ color: colors.network }}>
               {formatSpeed((currentMetrics.network || []).reduce((acc, n) => acc + (n.rxRate || 0), 0))}
             </span>
           </div>
           <MetricsChart 
             data={chartData} 
             dataKey="rx" 
-            color="#10b981" 
+            color={colors.network} 
             unit="KB/s" 
             height={160}
             domain={[0, 'auto']}
@@ -81,17 +83,17 @@ export const Network: React.FC = () => {
         }`}>
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-semibold text-slate-500 font-mono flex items-center gap-2">
-              <ArrowUpCircle className="w-4 h-4 text-indigo-400" />
+              <ArrowUpCircle className="w-4 h-4" style={{ color: colors.mem }} />
               <span>Instantaneous Upload (Tx)</span>
             </span>
-            <span className="text-xs font-mono font-bold text-indigo-400">
+            <span className="text-xs font-mono font-bold" style={{ color: colors.mem }}>
               {formatSpeed((currentMetrics.network || []).reduce((acc, n) => acc + (n.txRate || 0), 0))}
             </span>
           </div>
           <MetricsChart 
             data={chartData} 
             dataKey="tx" 
-            color="#6366f1" 
+            color={colors.mem} 
             unit="KB/s" 
             height={160}
             domain={[0, 'auto']}

@@ -1,11 +1,13 @@
 import React from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
 import { MetricsChart } from '../components/graphs/MetricsChart';
+import { getChartColorsByMode } from '../utils/colorModes';
 import { HardDrive, Activity, TrendingUp } from 'lucide-react';
 
 export const Disk: React.FC = () => {
-  const { currentMetrics, history, theme } = useMetricsStore();
+  const { currentMetrics, history, theme, colorMode } = useMetricsStore();
   const isDark = theme === 'dark';
+  const colors = getChartColorsByMode(colorMode);
 
   if (!currentMetrics) {
     return (
@@ -65,14 +67,14 @@ export const Disk: React.FC = () => {
         }`}>
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-semibold text-slate-500 font-mono">Active Read Rates</span>
-            <span className="text-xs font-mono font-bold text-amber-500">
+            <span className="text-xs font-mono font-bold" style={{ color: colors.disk }}>
               {formatMBs((currentMetrics.disks || []).reduce((acc, d) => acc + (d.readRate || 0), 0))} MB/s
             </span>
           </div>
           <MetricsChart 
             data={chartData} 
             dataKey="read" 
-            color="#f59e0b" 
+            color={colors.disk} 
             unit="MB/s" 
             height={160}
             domain={[0, 'auto']}
@@ -85,14 +87,14 @@ export const Disk: React.FC = () => {
         }`}>
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-semibold text-slate-500 font-mono">Active Write Rates</span>
-            <span className="text-xs font-mono font-bold text-orange-400">
+            <span className="text-xs font-mono font-bold" style={{ color: colors.mem }}>
               {formatMBs((currentMetrics.disks || []).reduce((acc, d) => acc + (d.writeRate || 0), 0))} MB/s
             </span>
           </div>
           <MetricsChart 
             data={chartData} 
             dataKey="write" 
-            color="#f97316" 
+            color={colors.mem} 
             unit="MB/s" 
             height={160}
             domain={[0, 'auto']}
