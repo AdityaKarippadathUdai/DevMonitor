@@ -89,7 +89,7 @@ export const GPU: React.FC = () => {
                   <div className={`rounded-xl border p-4 ${isDark ? 'bg-slate-950/40 border-slate-800/60' : 'bg-slate-50 border-slate-200'}`}>
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-xs font-semibold text-slate-500 font-mono">Core Load Timeline</span>
-                      <span className="text-xs font-mono font-bold text-emerald-400">{gpu.utilization.toFixed(1)}%</span>
+                      <span className="text-xs font-mono font-bold text-emerald-400">{(gpu.utilization || 0).toFixed(1)}%</span>
                     </div>
                     <MetricsChart 
                       data={chartData} 
@@ -104,7 +104,7 @@ export const GPU: React.FC = () => {
                   <div className={`rounded-xl border p-4 ${isDark ? 'bg-slate-950/40 border-slate-800/60' : 'bg-slate-50 border-slate-200'}`}>
                     <div className="flex justify-between items-center mb-4">
                       <span className="text-xs font-semibold text-slate-500 font-mono">VRAM Framebuffer Allocation</span>
-                      <span className="text-xs font-mono font-bold text-indigo-400">{gpu.vramPercentage.toFixed(1)}%</span>
+                      <span className="text-xs font-mono font-bold text-indigo-400">{(gpu.vramPercentage || 0).toFixed(1)}%</span>
                     </div>
                     <MetricsChart 
                       data={chartData} 
@@ -180,11 +180,11 @@ export const GPU: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono border-t border-slate-800/10 pt-4 text-slate-500">
                   <div>
                     <span className="font-semibold text-slate-400">Total Dedicated Framebuffer: </span>
-                    <span>{(gpu.vramTotal / (1024 ** 2)).toFixed(0)} MB SDRAM</span>
+                    <span>{((gpu.vramTotal || 0) / (1024 ** 2)).toFixed(0)} MB SDRAM</span>
                   </div>
                   <div className="md:text-right">
                     <span className="font-semibold text-slate-400">Used Memory Address Space: </span>
-                    <span>{(gpu.vramUsed / (1024 ** 2)).toFixed(0)} MB ({gpu.vramPercentage.toFixed(1)}%)</span>
+                    <span>{((gpu.vramUsed || 0) / (1024 ** 2)).toFixed(0)} MB ({(gpu.vramPercentage || 0).toFixed(1)}%)</span>
                   </div>
                 </div>
 

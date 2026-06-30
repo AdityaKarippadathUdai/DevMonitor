@@ -29,8 +29,8 @@ export const Network: React.FC = () => {
     const time = new Date(m.timestamp);
     const timeLabel = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
     
-    const rxSum = m.network.reduce((acc, curr) => acc + curr.rxRate, 0);
-    const txSum = m.network.reduce((acc, curr) => acc + curr.txRate, 0);
+    const rxSum = (m.network || []).reduce((acc, curr) => acc + (curr.rxRate || 0), 0);
+    const txSum = (m.network || []).reduce((acc, curr) => acc + (curr.txRate || 0), 0);
 
     return {
       timeLabel,
@@ -62,7 +62,7 @@ export const Network: React.FC = () => {
               <span>Instantaneous Download (Rx)</span>
             </span>
             <span className="text-xs font-mono font-bold text-emerald-400">
-              {formatSpeed(currentMetrics.network.reduce((acc, n) => acc + n.rxRate, 0))}
+              {formatSpeed((currentMetrics.network || []).reduce((acc, n) => acc + (n.rxRate || 0), 0))}
             </span>
           </div>
           <MetricsChart 
@@ -85,7 +85,7 @@ export const Network: React.FC = () => {
               <span>Instantaneous Upload (Tx)</span>
             </span>
             <span className="text-xs font-mono font-bold text-indigo-400">
-              {formatSpeed(currentMetrics.network.reduce((acc, n) => acc + n.txRate, 0))}
+              {formatSpeed((currentMetrics.network || []).reduce((acc, n) => acc + (n.txRate || 0), 0))}
             </span>
           </div>
           <MetricsChart 
@@ -110,7 +110,7 @@ export const Network: React.FC = () => {
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {currentMetrics.network.map((net, idx) => (
+          {(currentMetrics.network || []).map((net, idx) => (
             <div 
               key={idx} 
               className={`p-5 rounded-2xl border flex flex-col justify-between font-mono space-y-4 ${
@@ -118,23 +118,23 @@ export const Network: React.FC = () => {
               }`}
             >
               <div>
-                <span className="font-bold text-sm block text-indigo-400">{net.name}</span>
-                <span className="text-[10px] text-slate-500 mt-0.5 block">IP Address: {net.ip4}</span>
+                <span className="font-bold text-sm block text-indigo-400">{net.name || 'Interface'}</span>
+                <span className="text-[10px] text-slate-500 mt-0.5 block">IP Address: {net.ip4 || 'No IP'}</span>
               </div>
               
               <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-800/10">
                 <div>
                   <span className="text-slate-500 text-[10px] uppercase font-semibold block">Down Speed</span>
-                  <span className="font-bold text-emerald-400">{formatSpeed(net.rxRate)}</span>
+                  <span className="font-bold text-emerald-400">{formatSpeed(net.rxRate || 0)}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 text-[10px] uppercase font-semibold block">Up Speed</span>
-                  <span className="font-bold text-indigo-400">{formatSpeed(net.txRate)}</span>
+                  <span className="font-bold text-indigo-400">{formatSpeed(net.txRate || 0)}</span>
                 </div>
               </div>
             </div>
           ))}
-          {currentMetrics.network.length === 0 && (
+          {(!currentMetrics.network || currentMetrics.network.length === 0) && (
             <p className="text-xs text-slate-400 text-center col-span-2 py-6">No network sockets detected.</p>
           )}
         </div>

@@ -36,8 +36,8 @@ export const Disk: React.FC = () => {
     const timeLabel = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
     
     // Average or sum rates across drives
-    const readSum = m.disks.reduce((acc, curr) => acc + curr.readRate, 0);
-    const writeSum = m.disks.reduce((acc, curr) => acc + curr.writeRate, 0);
+    const readSum = (m.disks || []).reduce((acc, curr) => acc + (curr.readRate || 0), 0);
+    const writeSum = (m.disks || []).reduce((acc, curr) => acc + (curr.writeRate || 0), 0);
 
     return {
       timeLabel,
@@ -66,7 +66,7 @@ export const Disk: React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-semibold text-slate-500 font-mono">Active Read Rates</span>
             <span className="text-xs font-mono font-bold text-amber-500">
-              {formatMBs(currentMetrics.disks.reduce((acc, d) => acc + d.readRate, 0))} MB/s
+              {formatMBs((currentMetrics.disks || []).reduce((acc, d) => acc + (d.readRate || 0), 0))} MB/s
             </span>
           </div>
           <MetricsChart 
@@ -86,7 +86,7 @@ export const Disk: React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <span className="text-xs font-semibold text-slate-500 font-mono">Active Write Rates</span>
             <span className="text-xs font-mono font-bold text-orange-400">
-              {formatMBs(currentMetrics.disks.reduce((acc, d) => acc + d.writeRate, 0))} MB/s
+              {formatMBs((currentMetrics.disks || []).reduce((acc, d) => acc + (d.writeRate || 0), 0))} MB/s
             </span>
           </div>
           <MetricsChart 
@@ -111,7 +111,7 @@ export const Disk: React.FC = () => {
         </h3>
 
         <div className="space-y-6">
-          {currentMetrics.disks.map((disk, idx) => (
+          {(currentMetrics.disks || []).map((disk, idx) => (
             <div 
               key={idx} 
               className={`p-5 rounded-2xl border flex flex-col md:flex-row justify-between items-start md:items-center gap-6 ${
@@ -120,9 +120,9 @@ export const Disk: React.FC = () => {
             >
               {/* Drive descriptors */}
               <div className="space-y-1">
-                <span className="font-bold text-sm block">{disk.name}</span>
+                <span className="font-bold text-sm block">{disk.name || 'Drive'}</span>
                 <div className="flex items-center gap-3 text-[10px] font-mono text-slate-500">
-                  <span>File-System: <span className="font-semibold">{disk.type}</span></span>
+                  <span>File-System: <span className="font-semibold">{disk.type || 'SSD'}</span></span>
                   <span>•</span>
                   <span>Operational Health: <span className="text-emerald-400 font-bold">Excellent</span></span>
                 </div>
@@ -132,24 +132,24 @@ export const Disk: React.FC = () => {
               <div className="flex-1 max-w-md w-full space-y-2">
                 <div className="flex justify-between text-xs font-mono">
                   <span className="text-slate-500">Utilization Space:</span>
-                  <span className="font-semibold text-amber-400">{disk.usePercentage.toFixed(1)}% Used</span>
+                  <span className="font-semibold text-amber-400">{(disk.usePercentage || 0).toFixed(1)}% Used</span>
                 </div>
                 <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
                   <div 
                     className="h-full bg-gradient-to-r from-amber-500 to-yellow-400 transition-all duration-300"
-                    style={{ width: `${disk.usePercentage}%` }}
+                    style={{ width: `${disk.usePercentage || 0}%` }}
                   ></div>
                 </div>
                 <div className="flex justify-between text-[10px] font-mono text-slate-500">
-                  <span>Used: {formatBytes(disk.used)}</span>
-                  <span>Available Free: {formatBytes(disk.available)}</span>
-                  <span>Capacity: {formatBytes(disk.size)}</span>
+                  <span>Used: {formatBytes(disk.used || 0)}</span>
+                  <span>Available Free: {formatBytes(disk.available || 0)}</span>
+                  <span>Capacity: {formatBytes(disk.size || 0)}</span>
                 </div>
               </div>
 
             </div>
           ))}
-          {currentMetrics.disks.length === 0 && (
+          {(!currentMetrics.disks || currentMetrics.disks.length === 0) && (
             <p className="text-xs text-slate-400 font-mono text-center py-6">No storage volumes detected.</p>
           )}
         </div>

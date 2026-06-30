@@ -60,7 +60,7 @@ export const CPU: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-sm">Utilization Timeline (60 seconds)</h3>
             <span className="text-xs font-mono text-cyan-400 font-bold bg-cyan-950/20 px-2 py-0.5 rounded-full">
-              {cpu.usage.toFixed(1)}% Load
+              {(cpu?.usage || 0).toFixed(1)}% Load
             </span>
           </div>
 
