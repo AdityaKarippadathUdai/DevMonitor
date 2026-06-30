@@ -1,0 +1,6 @@
+{
+  "name": "Resource Monitor",
+  "description": "A lightweight, real-time cross-platform desktop and web-based system resource monitor showing detailed metrics for CPU, Memory, GPU, Disks, Network, and running processes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
