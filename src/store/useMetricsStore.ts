@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { SystemAllMetrics, SystemSpecs } from '../types';
+import type { SystemAllMetrics, SystemSpecs } from '../../shared/types';
 import { COLOR_MODES } from '../utils/colorModes';
 
 export interface GlassmorphismSettings {
@@ -87,6 +87,8 @@ const loadGlassSettings = (): GlassmorphismSettings => {
   return defaultGlassSettings;
 };
 
+let hasStartedListening = false;
+
 export const useMetricsStore = create<MetricsState>((set, get) => ({
   specs: null,
   currentMetrics: null,
@@ -163,60 +165,52 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
 
   fetchSpecs: async () => {
     try {
-      if (window.electronAPI) {
-        const specs = await window.electronAPI.getSystemSpecs();
-        set({ specs });
-      } else {
-        const res = await fetch('/api/specs');
-        if (res.ok) {
-          const specs = await res.json();
-          set({ specs });
-        }
+      if (!window.electronAPI) {
+        return;
       }
+
+      console.log('[Store] Requesting system specs from Electron');
+      const specs = await window.electronAPI.getSystemSpecs();
+      set({ specs });
     } catch (error) {
       console.error('Failed to fetch system specifications:', error);
     }
   },
 
   startListening: () => {
+    if (hasStartedListening) {
+      return () => undefined;
+    }
+
+    hasStartedListening = true;
+
     const { addMetrics, fetchSpecs } = get();
-    
-    // Make sure static specs are loaded first
-    fetchSpecs();
 
-    // 1. If Electron IPC is available, subscribe to Electron events
-    if (window.electronAPI) {
-      console.log('[Store] Subscribing to Electron IPC metrics-update');
-      const unsubscribe = window.electronAPI.onMetricsUpdate((metrics) => {
-        addMetrics(metrics);
-      });
-      return () => {
-        unsubscribe();
-        set({ isLive: false });
-      };
-    } 
-    
-    // 2. If running in a web browser preview, subscribe via Server-Sent Events (SSE)
-    console.log('[Store] Subscribing to Express SSE /api/metrics/live');
-    const eventSource = new EventSource('/api/metrics/live');
-    
-    eventSource.onmessage = (event) => {
-      try {
-        const metrics: SystemAllMetrics = JSON.parse(event.data);
-        addMetrics(metrics);
-      } catch (err) {
-        console.error('[Store] Error parsing SSE metrics data:', err);
-      }
-    };
+    void fetchSpecs();
 
-    eventSource.onerror = (err) => {
-      console.error('[Store] SSE connection error. Retrying...', err);
+    if (!window.electronAPI) {
       set({ isLive: false });
-    };
+      return () => undefined;
+    }
+
+    console.log('[Store] Subscribing to Electron IPC metrics-update');
+    const unsubscribe = window.electronAPI.onMetricsUpdate((metrics) => {
+      console.log('[Store] Received metrics-update event', metrics?.timestamp);
+      addMetrics(metrics);
+    });
+
+    void window.electronAPI.getSystemMetrics()
+      .then((metrics) => {
+        console.log('[Store] Received initial metrics snapshot', metrics?.timestamp);
+        addMetrics(metrics);
+      })
+      .catch((error) => {
+        console.error('[Store] Failed to fetch initial system metrics:', error);
+      });
 
     return () => {
-      console.log('[Store] Closing SSE connection');
-      eventSource.close();
+      hasStartedListening = false;
+      unsubscribe();
       set({ isLive: false });
     };
   }
