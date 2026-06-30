@@ -213,7 +213,7 @@ The application follows Electron security best practices.
 ## Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/AdityaKarippadathUdai/DevMonitor
 cd DevMonitor
 ```
 
