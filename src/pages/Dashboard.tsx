@@ -137,7 +137,15 @@ const DashboardMemoryChart: React.FC<DashboardMemoryChartProps> = ({ data, isDar
 };
 
 export const Dashboard: React.FC = () => {
-  const { currentMetrics, history, theme, setActiveTab, glassSettings } = useMetricsStore();
+  const { 
+    currentMetrics, 
+    history, 
+    theme, 
+    setActiveTab, 
+    glassSettings,
+    miniModeActive,
+    setMiniModeActive
+  } = useMetricsStore();
   const isDark = theme === 'dark';
   const glassStyle = getGlassmorphicStyle(glassSettings, isDark);
 
@@ -198,13 +206,27 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Intro Stats */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">System At A Glance</h2>
           <p className={`text-xs mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
             Real-time visual feed of processing power, storage array, and active sockets.
           </p>
         </div>
+
+        <button
+          onClick={() => setMiniModeActive(!miniModeActive)}
+          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl border text-xs font-mono font-semibold transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+            miniModeActive
+              ? 'bg-cyan-500 border-cyan-400 text-white shadow-md shadow-cyan-500/20'
+              : isDark
+                ? 'bg-slate-900/60 border-slate-800 text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50'
+                : 'bg-white border-slate-200 text-slate-600 hover:text-cyan-600 hover:border-cyan-400'
+          }`}
+        >
+          <span className={`w-2 h-2 rounded-full ${miniModeActive ? 'bg-white animate-pulse' : 'bg-cyan-500'}`}></span>
+          <span>{miniModeActive ? 'Mini Monitor: Active' : 'Mini Monitor Window'}</span>
+        </button>
       </div>
 
       {/* Grid of Resource Cards */}

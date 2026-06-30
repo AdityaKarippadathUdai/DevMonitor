@@ -25,6 +25,7 @@ interface MetricsState {
   theme: 'dark' | 'light';
   isLive: boolean;
   glassSettings: GlassmorphismSettings;
+  miniModeActive: boolean;
   
   setTheme: (theme: 'dark' | 'light') => void;
   setActiveTab: (tab: MetricsState['activeTab']) => void;
@@ -33,6 +34,7 @@ interface MetricsState {
   fetchSpecs: () => Promise<void>;
   startListening: () => () => void; // returns cleanup function
   updateGlassSettings: (settings: Partial<GlassmorphismSettings>) => void;
+  setMiniModeActive: (active: boolean) => void;
 }
 
 // Helper to load settings from localStorage safely
@@ -57,6 +59,7 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
   theme: 'dark',
   isLive: false,
   glassSettings: loadGlassSettings(),
+  miniModeActive: false,
 
   setTheme: (theme) => {
     set({ theme });
@@ -71,6 +74,8 @@ export const useMetricsStore = create<MetricsState>((set, get) => ({
   setActiveTab: (activeTab) => set({ activeTab }),
 
   setSpecs: (specs) => set({ specs }),
+
+  setMiniModeActive: (miniModeActive) => set({ miniModeActive }),
 
   updateGlassSettings: (settings) => {
     set((state) => {

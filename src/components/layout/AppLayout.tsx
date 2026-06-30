@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useMetricsStore } from '../../store/useMetricsStore';
 import { SettingsDrawer } from './SettingsDrawer';
+import { MiniMonitorWidget } from './MiniMonitorWidget';
 import { 
   LayoutDashboard, 
   Cpu, 
@@ -12,7 +13,8 @@ import {
   Moon,
   Laptop,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Tv,
 } from 'lucide-react';
 
 interface AppLayoutProps {
@@ -20,7 +22,17 @@ interface AppLayoutProps {
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const { activeTab, setActiveTab, theme, setTheme, currentMetrics, isLive, specs } = useMetricsStore();
+  const { 
+    activeTab, 
+    setActiveTab, 
+    theme, 
+    setTheme, 
+    currentMetrics, 
+    isLive, 
+    specs,
+    miniModeActive,
+    setMiniModeActive
+  } = useMetricsStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -114,6 +126,27 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           >
             <Settings className="w-4 h-4" />
           </button>
+
+          {/* Mini Monitor Toggle Button */}
+          <button
+            onClick={() => setMiniModeActive(!miniModeActive)}
+            className={`p-2 rounded-xl border transition-all hover:scale-105 active:scale-95 cursor-pointer relative ${
+              miniModeActive
+                ? 'bg-cyan-500 border-cyan-400 text-white shadow-lg shadow-cyan-500/20'
+                : isDark 
+                  ? 'bg-slate-800/50 border-slate-700/60 text-slate-400 hover:bg-slate-800 hover:text-cyan-400' 
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-cyan-600 shadow-sm'
+            }`}
+            title="Toggle Floating Mini Monitor"
+          >
+            <Tv className="w-4 h-4" />
+            {miniModeActive && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-300"></span>
+              </span>
+            )}
+          </button>
         </div>
       </header>
 
@@ -167,6 +200,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </main>
       </div>
       <SettingsDrawer isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <MiniMonitorWidget />
     </div>
   );
 };
