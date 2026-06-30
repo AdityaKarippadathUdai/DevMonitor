@@ -1,7 +1,148 @@
 import React from 'react';
 import { useMetricsStore } from '../store/useMetricsStore';
-import { MetricsChart } from '../components/graphs/MetricsChart';
 import { Layers, Database, ShieldAlert, Cpu } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from 'recharts';
+
+interface MemoryChartProps {
+  data: any[];
+  isDark: boolean;
+  totalGB: number;
+}
+
+const MemoryChart: React.FC<MemoryChartProps> = ({ data, isDark, totalGB }) => {
+  const maxDomain = Math.ceil(totalGB) || 16;
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const used = payload.find((p: any) => p.name === 'Active')?.value || 0;
+      const cached = payload.find((p: any) => p.name === 'Cache')?.value || 0;
+      const buffers = payload.find((p: any) => p.name === 'Buffers')?.value || 0;
+      const totalAllocated = (used + cached + buffers).toFixed(2);
+
+      return (
+        <div className={`p-3 rounded-xl border text-xs shadow-lg space-y-1.5 font-mono ${
+          isDark
+            ? 'bg-slate-950/95 border-slate-800 text-slate-100'
+            : 'bg-white/95 border-slate-200 text-slate-900'
+        }`}>
+          <div className="font-semibold text-[10px] text-slate-400 uppercase tracking-wider mb-1">
+            Memory Allocation Composition
+          </div>
+          <div className="flex justify-between gap-8">
+            <span className="flex items-center gap-1.5 text-pink-400">
+              <span className="w-2 h-2 rounded-full bg-pink-500"></span>
+              Active Used:
+            </span>
+            <span className="font-bold">{used.toFixed(2)} GB</span>
+          </div>
+          <div className="flex justify-between gap-8">
+            <span className="flex items-center gap-1.5 text-indigo-400">
+              <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+              Caches:
+            </span>
+            <span className="font-bold">{cached.toFixed(2)} GB</span>
+          </div>
+          <div className="flex justify-between gap-8 pb-1.5 border-b border-slate-800/10">
+            <span className="flex items-center gap-1.5 text-purple-400">
+              <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+              Buffers:
+            </span>
+            <span className="font-bold">{buffers.toFixed(2)} GB</span>
+          </div>
+          <div className="flex justify-between gap-8 pt-0.5">
+            <span className="text-slate-400">Combined:</span>
+            <span className="font-bold text-emerald-400">{totalAllocated} / {totalGB.toFixed(2)} GB</span>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div style={{ width: '100%', height: 220 }} className="relative">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart
+          data={data}
+          margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+        >
+          <defs>
+            <linearGradient id="gradient-used" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#ec4899" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="#ec4899" stopOpacity={0.0} />
+            </linearGradient>
+            <linearGradient id="gradient-cached" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
+            </linearGradient>
+            <linearGradient id="gradient-buffers" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#c084fc" stopOpacity={0.4} />
+              <stop offset="95%" stopColor="#c084fc" stopOpacity={0.0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid
+            strokeDasharray="3 3"
+            vertical={false}
+            stroke={isDark ? 'rgba(51, 65, 85, 0.15)' : 'rgba(226, 232, 240, 0.4)'}
+          />
+          <XAxis
+            dataKey="timeLabel"
+            hide
+          />
+          <YAxis
+            domain={[0, maxDomain]}
+            tick={{ fontSize: 10, fill: isDark ? '#94a3b8' : '#64748b', fontFamily: 'monospace' }}
+            stroke="transparent"
+            width={35}
+            unit="G"
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Area
+            type="monotone"
+            dataKey="used"
+            stackId="1"
+            stroke="#ec4899"
+            strokeWidth={1.5}
+            fillOpacity={1}
+            fill="url(#gradient-used)"
+            name="Active"
+            isAnimationActive={false}
+          />
+          <Area
+            type="monotone"
+            dataKey="cached"
+            stackId="1"
+            stroke="#6366f1"
+            strokeWidth={1.5}
+            fillOpacity={1}
+            fill="url(#gradient-cached)"
+            name="Cache"
+            isAnimationActive={false}
+          />
+          <Area
+            type="monotone"
+            dataKey="buffers"
+            stackId="1"
+            stroke="#c084fc"
+            strokeWidth={1.5}
+            fillOpacity={1}
+            fill="url(#gradient-buffers)"
+            name="Buffers"
+            isAnimationActive={false}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
 
 export const Memory: React.FC = () => {
   const { currentMetrics, history, theme } = useMetricsStore();
@@ -26,7 +167,9 @@ export const Memory: React.FC = () => {
     const timeLabel = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}:${time.getSeconds().toString().padStart(2, '0')}`;
     return {
       timeLabel,
-      mem: m.memory.percentage,
+      used: (m.memory?.used || 0) / (1024 ** 3),
+      cached: (m.memory?.cached || 0) / (1024 ** 3),
+      buffers: (m.memory?.buffers || 0) / (1024 ** 3),
     };
   });
 
@@ -60,19 +203,33 @@ export const Memory: React.FC = () => {
         <div className={`lg:col-span-2 rounded-2xl border p-5 ${
           isDark ? 'bg-slate-900/40 border-slate-800/80 shadow-lg' : 'bg-white border-slate-200 shadow-md'
         }`}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-sm">Memory Allocation (60 seconds)</h3>
-            <span className="text-xs font-mono text-pink-400 font-bold bg-pink-950/20 px-2 py-0.5 rounded-full">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <div>
+              <h3 className="font-semibold text-sm">Memory Allocation (60 seconds)</h3>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[10px] font-mono text-slate-500">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-pink-500"></span>
+                  Active Used ({usedGB} GB)
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                  Cache Blocks ({cachedGB} GB)
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-purple-400"></span>
+                  Kern Buffers ({buffersGB} GB)
+                </span>
+              </div>
+            </div>
+            <span className="self-start sm:self-center text-xs font-mono text-pink-400 font-bold bg-pink-950/20 px-2 py-0.5 rounded-full">
               {(mem?.percentage || 0).toFixed(1)}% Used
             </span>
           </div>
 
-          <MetricsChart 
+          <MemoryChart 
             data={chartData} 
-            dataKey="mem" 
-            color="#ec4899" 
-            unit="%" 
-            height={220} 
+            isDark={isDark} 
+            totalGB={(mem?.total || 0) / (1024 ** 3)} 
           />
         </div>
 
