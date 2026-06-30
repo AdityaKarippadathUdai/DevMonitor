@@ -1,6 +1,6 @@
 import si from 'systeminformation';
 import os from 'os';
-import { CpuMetrics, ProcessInfo } from '../../src/types';
+import type { CpuMetrics, ProcessInfo } from '../../shared/types.js';
 
 let cachedStaticCpu: {
   brand: string;
