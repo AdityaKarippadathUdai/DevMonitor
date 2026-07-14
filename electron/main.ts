@@ -58,6 +58,7 @@ async function createWindow() {
     minWidth: 900,
     minHeight: 600,
     title: 'Resource Monitor',
+    icon: path.join(__dirname, '../../assets/IconDevMonitor.png'),
     frame: true,
     backgroundColor: '#0f172a',
     webPreferences: {
