@@ -51,7 +51,8 @@
     },
     "files": [
       "dist/**/*",
-      "electron/**/*"
+      "electron/**/*",
+      "assets/**/*"
     ],
     "asar": true,
     "mac": {
@@ -70,7 +71,8 @@
       "target": [
         "AppImage"
       ],
-      "category": "System"
+      "category": "Utility",
+      "icon": "assets/IconDevMonitor.png"
     }
   }
 }
