@@ -71,8 +71,7 @@
       "target": [
         "AppImage"
       ],
-      "category": "Utility",
-      "icon": "assets/IconDevMonitor.png"
+      "category": "Utility"
     }
   }
 }
