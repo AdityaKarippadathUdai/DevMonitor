@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeImage } from 'electron';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,6 +9,13 @@ const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
 let metricsInterval: NodeJS.Timeout | null = null;
+
+// The AppImage sandbox requires the setuid helper to be correctly configured.
+// However, AppImages run from FUSE mounts and cannot have suid permissions.
+// Disabling the setuid sandbox forces Chromium to use the unprivileged user namespace sandbox instead.
+if (process.platform === 'linux') {
+  app.commandLine.appendSwitch('disable-setuid-sandbox');
+}
 
 function resolvePreloadPath() {
   const candidates = [
@@ -58,7 +65,7 @@ async function createWindow() {
     minWidth: 900,
     minHeight: 600,
     title: 'Resource Monitor',
-    icon: path.join(__dirname, '../../assets/IconDevMonitor.png'),
+    icon: nativeImage.createFromPath(path.join(__dirname, '../../assets/IconDevMonitor.png')),
     frame: true,
     backgroundColor: '#0f172a',
     webPreferences: {
