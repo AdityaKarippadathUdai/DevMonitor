@@ -9,7 +9,7 @@
     "build": "vite build",
     "build:electron": "tsc -p tsconfig.electron.json",
     "preview": "vite preview",
-    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://127.0.0.1:5173 && npm run build:electron && VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://127.0.0.1:5173 && npm run build:electron && VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron . --disable-setuid-sandbox\"",
     "electron:build": "npm run build && npm run build:electron && electron-builder",
     "dist": "npm run electron:build",
     "clean": "rm -rf dist release",
@@ -70,7 +70,11 @@
       "target": [
         "AppImage"
       ],
-      "category": "Utility"
+      "category": "Utility",
+      "artifactName": "Resource-Monitor-${version}-${arch}.${ext}",
+      "executableArgs": [
+        "--disable-setuid-sandbox"
+      ]
     }
   }
 }
