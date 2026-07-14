@@ -14,7 +14,6 @@ let metricsInterval: NodeJS.Timeout | null = null;
 // However, AppImages run from FUSE mounts and cannot have suid permissions.
 // Disabling the setuid sandbox forces Chromium to use the unprivileged user namespace sandbox instead.
 if (process.platform === 'linux') {
-  app.commandLine.appendSwitch('disable-setuid-sandbox');
 }
 
 function resolvePreloadPath() {
